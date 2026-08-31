@@ -9,10 +9,37 @@
         "id": "mauricio_toro",
         "tipo": "google_news_search",
         "termino": "Mauricio Toro",
+        "emoji": "🟣",
         "aliases": [
-          "Mauricio Toro"
+          "Mauricio Toro",
+          "Mauricio Andrés Toro",
+          "Mauricio Toro Orjuela",
+          "Mauricio Andrés Toro Orjuela"
         ],
+        "exclusiones": [
+          "Óscar Mauricio Toro",
+          "Oscar Mauricio Toro",
+          "Mauricio Toro-Goya",
+          "Mauricio Toro Goya"
+        ],
+        "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Mauricio+Toro%22&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde",
+        "tipo": "google_news_search",
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Alianza Verde",
+          "Partido Alianza Verde",
+          "Partido Verde"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=(%22Alianza+Verde%22+OR+%22Partido+Verde%22)+Colombia&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": true
       }

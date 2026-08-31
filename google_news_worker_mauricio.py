@@ -62,22 +62,6 @@ MONITORING_START_DATE = date.fromisoformat(
     os.getenv("MAURICIO_MONITORING_START_DATE", "2026-08-31").strip()
 )
 
-EXCLUDED_NAME_PATTERNS = [
-    "oscar mauricio toro",
-    "óscar mauricio toro",
-    "mauricio toro-goya",
-    "mauricio toro goya",
-]
-
-TARGET_NAME_PATTERNS = [
-    "mauricio toro",
-    "mauricio andres toro",
-    "mauricio andrés toro",
-    "mauricio toro orjuela",
-    "mauricio andres toro orjuela",
-    "mauricio andrés toro orjuela",
-]
-
 
 def safe_text(value) -> str:
     return "" if value is None else str(value).strip()
@@ -160,6 +144,14 @@ def load_sources() -> list[dict]:
                     or rss_id
                 ),
                 "aliases": rss.get("aliases") or [],
+                "exclusiones": rss.get("exclusiones") or [],
+                "contexto_requerido": (
+                    rss.get("contexto_requerido") or []
+                ),
+                "emoji": (
+                    safe_text(rss.get("emoji"))
+                    or "🔵"
+                ),
                 "source_type": (
                     safe_text(rss.get("tipo"))
                     or "google_news_search"
@@ -179,18 +171,83 @@ def normalize_for_match(value: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def classify_relevance(title: str, summary: str) -> tuple[bool, str]:
-    combined = normalize_for_match(f"{title} {summary}")
+def classify_relevance(
+    title: str,
+    summary: str,
+    aliases: list[str] | None = None,
+    exclusions: list[str] | None = None,
+    contexto_requerido: list[str] | None = None,
+) -> tuple[bool, str]:
 
-    for excluded in EXCLUDED_NAME_PATTERNS:
-        if excluded in combined:
-            return False, f"homonimo_excluido:{excluded}"
+    combined = normalize_for_match(
+        f"{title} {summary}"
+    )
 
-    for target in TARGET_NAME_PATTERNS:
-        if target in combined:
-            return True, "nombre_objetivo_detectado"
+    aliases = aliases or []
+    exclusions = exclusions or []
+    contexto_requerido = (
+        contexto_requerido or []
+    )
 
-    return False, "nombre_objetivo_no_detectado"
+    # 1. Exclusiones tienen prioridad.
+    for excluded in exclusions:
+        excluded_norm = normalize_for_match(
+            excluded
+        )
+
+        if (
+            excluded_norm
+            and excluded_norm in combined
+        ):
+            return (
+                False,
+                f"exclusion_detectada:{excluded}",
+            )
+
+    # 2. Debe aparecer al menos un alias.
+    matched_alias = None
+
+    for alias in aliases:
+        alias_norm = normalize_for_match(alias)
+
+        if (
+            alias_norm
+            and alias_norm in combined
+        ):
+            matched_alias = alias
+            break
+
+    if not matched_alias:
+        return False, "ningun_alias_detectado"
+
+    # 3. Algunas fuentes, como Alianza Verde,
+    # requieren además contexto para evitar
+    # homónimos o usos no políticos.
+    if contexto_requerido:
+        context_found = False
+
+        for context_term in contexto_requerido:
+            context_norm = normalize_for_match(
+                context_term
+            )
+
+            if (
+                context_norm
+                and context_norm in combined
+            ):
+                context_found = True
+                break
+
+        if not context_found:
+            return (
+                False,
+                "sin_contexto_requerido",
+            )
+
+    return (
+        True,
+        f"alias_detectado:{matched_alias}",
+    )
 
 
 def is_operational_date(published_dt: datetime) -> bool:
@@ -207,7 +264,12 @@ def parse_existing_datetime(value: str):
         return None
 
 
-def refresh_existing_article_flags(articles: list[dict]) -> dict:
+def refresh_existing_article_flags(
+    articles: list[dict],
+    matches: list[dict],
+    sources: list[dict],
+) -> dict:
+
     stats = {
         "relevant": 0,
         "irrelevant": 0,
@@ -215,25 +277,133 @@ def refresh_existing_article_flags(articles: list[dict]) -> dict:
         "non_operational": 0,
     }
 
-    for row in articles:
-        relevant, reason = classify_relevance(
-            safe_text(row.get("titulo")),
-            safe_text(row.get("resumen_rss")),
-        )
-        row["relevante"] = "true" if relevant else "false"
-        row["motivo_relevancia"] = reason
+    source_by_rss = {
+        source["rss_id"]: source
+        for source in sources
+    }
 
-        published_dt = parse_existing_datetime(
-            row.get("fecha_publicacion_utc")
+    matches_by_article = {}
+
+    for match in matches:
+        article_id = safe_text(
+            match.get("article_id")
         )
+
+        if not article_id:
+            continue
+
+        matches_by_article.setdefault(
+            article_id,
+            [],
+        ).append(match)
+
+    for row in articles:
+        article_id = safe_text(
+            row.get("article_id")
+        )
+
+        title = safe_text(
+            row.get("titulo")
+        )
+
+        summary = safe_text(
+            row.get("resumen_rss")
+        )
+
+        article_matches = (
+            matches_by_article.get(
+                article_id,
+                [],
+            )
+        )
+
+        relevant = False
+        reasons = []
+
+        for match in article_matches:
+            rss_id = safe_text(
+                match.get("rss_id")
+            )
+
+            source_cfg = source_by_rss.get(
+                rss_id
+            )
+
+            if not source_cfg:
+                continue
+
+            match_relevant, reason = (
+                classify_relevance(
+                    title,
+                    summary,
+                    aliases=source_cfg.get(
+                        "aliases",
+                        [],
+                    ),
+                    exclusions=source_cfg.get(
+                        "exclusiones",
+                        [],
+                    ),
+                    contexto_requerido=(
+                        source_cfg.get(
+                            "contexto_requerido",
+                            [],
+                        )
+                    ),
+                )
+            )
+
+            reasons.append(
+                f"{rss_id}:{reason}"
+            )
+
+            if match_relevant:
+                relevant = True
+
+        row["relevante"] = (
+            "true" if relevant else "false"
+        )
+
+        row["motivo_relevancia"] = (
+            " | ".join(reasons)
+            if reasons
+            else safe_text(
+                row.get(
+                    "motivo_relevancia"
+                )
+            )
+        )
+
+        published_dt = (
+            parse_existing_datetime(
+                row.get(
+                    "fecha_publicacion_utc"
+                )
+            )
+        )
+
         operational = bool(
             published_dt is not None
-            and is_operational_date(published_dt)
+            and is_operational_date(
+                published_dt
+            )
         )
-        row["es_operativa"] = "true" if operational else "false"
 
-        stats["relevant" if relevant else "irrelevant"] += 1
-        stats["operational" if operational else "non_operational"] += 1
+        row["es_operativa"] = (
+            "true"
+            if operational
+            else "false"
+        )
+
+        if relevant:
+            stats["relevant"] += 1
+        else:
+            stats["irrelevant"] += 1
+
+        if operational:
+            stats["operational"] += 1
+        else:
+            stats["non_operational"] += 1
 
     return stats
 
@@ -353,8 +523,16 @@ def format_telegram(
     article: dict,
     source_cfg: dict,
 ) -> str:
+
+    emoji = (
+        safe_text(
+            source_cfg.get("emoji")
+        )
+        or "🔵"
+    )
+
     parts = [
-        f"🟣 {source_cfg['cliente_nombre']}",
+        f"{emoji} {source_cfg['termino']}",
         f"📰 {article['titulo']}",
     ]
 
@@ -466,6 +644,18 @@ def process_source(
         relevant, relevance_reason = classify_relevance(
             title,
             summary,
+            aliases=source_cfg.get(
+                "aliases",
+                [],
+            ),
+            exclusions=source_cfg.get(
+                "exclusiones",
+                [],
+            ),
+            contexto_requerido=source_cfg.get(
+                "contexto_requerido",
+                [],
+            ),
         )
         operational = is_operational_date(
             published_dt
@@ -684,7 +874,9 @@ def run_once() -> None:
     ) = load_state()
 
     flag_stats = refresh_existing_article_flags(
-        articles
+        articles,
+        matches,
+        sources,
     )
 
     existing_article_ids = {
