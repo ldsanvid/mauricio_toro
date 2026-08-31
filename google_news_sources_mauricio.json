@@ -1,0 +1,22 @@
+[
+  {
+    "cliente_id": "mauricio_toro",
+    "cliente_nombre": "Mauricio Toro",
+    "pais": "CO",
+    "timezone": "America/Bogota",
+    "rss": [
+      {
+        "id": "mauricio_toro",
+        "tipo": "google_news_search",
+        "termino": "Mauricio Toro",
+        "aliases": [
+          "Mauricio Toro"
+        ],
+        "url": "https://news.google.com/rss/search?q=%22Mauricio+Toro%22&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      }
+    ],
+    "activo": true
+  }
+]
