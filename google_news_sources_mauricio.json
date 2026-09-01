@@ -200,7 +200,7 @@
   ],
   "exclusiones": [],
   "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=(%22Catherine+Juvinao%22+OR+%22Cathy+Juvinao%22)+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "url": "https://news.google.com/rss/search?q=%22Catherine+Juvinao%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
   "activo": true,
   "enviar_telegram": true
 },
