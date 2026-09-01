@@ -247,21 +247,6 @@
   "url": "https://news.google.com/rss/search?q=%22Jaime+Ra%C3%BAl+Salamanca%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
   "activo": true,
   "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_carlos_amaya",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Carlos Amaya"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Carlos+Amaya%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
 }
     ],
     "activo": true

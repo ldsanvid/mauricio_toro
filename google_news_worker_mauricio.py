@@ -192,6 +192,73 @@ def normalize_story_component(value: str) -> str:
         text,
     ).strip()
 
+def canonical_story_title(
+    title: str,
+    publisher: str,
+) -> str:
+
+    title = clean_html_text(
+        title
+    )
+
+    publisher = clean_html_text(
+        publisher
+    )
+
+    # Algunas filas antiguas guardaron:
+    # "Titular - Nombre del medio"
+    #
+    # mientras que las nuevas ya guardan
+    # solamente "Titular".
+    if " - " in title:
+        possible_title, possible_suffix = (
+            title.rsplit(" - ", 1)
+        )
+
+        suffix_norm = (
+            normalize_story_component(
+                possible_suffix
+            )
+        )
+
+        publisher_norm = (
+            normalize_story_component(
+                publisher
+            )
+        )
+
+        # Comparamos también sin espacios para
+        # tolerar cosas como:
+        # "Confidencial Noticias"
+        # vs "confidencialnoticias.com"
+        suffix_compact = re.sub(
+            r"[^a-z0-9]",
+            "",
+            suffix_norm,
+        )
+
+        publisher_compact = re.sub(
+            r"[^a-z0-9]",
+            "",
+            publisher_norm,
+        )
+
+        looks_like_publisher = (
+            suffix_norm
+            and (
+                suffix_norm in publisher_norm
+                or publisher_norm in suffix_norm
+                or suffix_compact in publisher_compact
+                or publisher_compact in suffix_compact
+            )
+        )
+
+        if looks_like_publisher:
+            title = possible_title
+
+    return normalize_story_component(
+        title
+    )
 
 def build_story_key(
     title: str,
@@ -199,12 +266,11 @@ def build_story_key(
     published_dt: datetime,
 ) -> str:
 
-    normalized_title = normalize_story_component(
-        title
-    )
-
-    normalized_publisher = normalize_story_component(
-        publisher
+    normalized_title = (
+        canonical_story_title(
+            title=title,
+            publisher=publisher,
+        )
     )
 
     publication_date = (
@@ -216,7 +282,6 @@ def build_story_key(
 
     canonical = "|".join([
         normalized_title,
-        normalized_publisher,
         publication_date,
     ])
 
@@ -815,6 +880,7 @@ def choose_telegram_source(
             "mauricio_toro"
         )
     )
+  
 
     # PRIORIDAD ABSOLUTA:
     # si Mauricio aparece en título, resumen,
@@ -910,6 +976,7 @@ def send_pending_telegrams(
         "telegram_sent": 0,
         "telegram_skipped_bootstrap": 0,
     }
+
     source_by_rss = {
         source["rss_id"]: source
         for source in sources
@@ -921,10 +988,84 @@ def send_pending_telegrams(
         )
     )
 
+    # Última barrera contra duplicados:
+    # si cualquier copia editorial de una historia
+    # ya fue enviada, no volvemos a mandarla.
+    sent_story_keys = set()
+
+    for row in articles:
+        already_sent = (
+            safe_text(
+                row.get("telegram_sent")
+            ).lower()
+            == "true"
+        )
+
+        if not already_sent:
+            continue
+
+        story_key = safe_text(
+            row.get("story_key")
+        )
+
+        if not story_key:
+            published_dt = (
+                parse_existing_datetime(
+                    row.get(
+                        "fecha_publicacion_utc"
+                    )
+                )
+            )
+
+            if published_dt is not None:
+                story_key = build_story_key(
+                    title=safe_text(
+                        row.get("titulo")
+                    ),
+                    publisher=safe_text(
+                        row.get("fuente")
+                    ),
+                    published_dt=published_dt,
+                )
+
+                row["story_key"] = story_key
+
+        if story_key:
+            sent_story_keys.add(
+                story_key
+            )
+
     for article in articles:
         article_id = safe_text(
             article.get("article_id")
         )
+        story_key = safe_text(
+            article.get("story_key")
+        )
+
+        if not story_key:
+            published_dt_for_key = (
+                parse_existing_datetime(
+                    article.get(
+                        "fecha_publicacion_utc"
+                    )
+                )
+            )
+
+            if published_dt_for_key is not None:
+                story_key = build_story_key(
+                    title=safe_text(
+                        article.get("titulo")
+                    ),
+                    publisher=safe_text(
+                        article.get("fuente")
+                    ),
+                    published_dt=published_dt_for_key,
+                )
+
+                article["story_key"] = (
+                    story_key
+                )
 
         if not article_id:
             continue
@@ -955,6 +1096,20 @@ def send_pending_telegrams(
             or not operational
             or already_sent
         ):
+            continue
+        # Puede existir otra fila histórica de la
+        # misma noticia que ya fue enviada.
+        if (
+            story_key
+            and story_key in sent_story_keys
+        ):
+            article["telegram_sent"] = "true"
+
+            print(
+                "🛑 TELEGRAM DUPLICADO EVITADO | "
+                f"{article.get('titulo', '')}"
+            )
+
             continue
 
         # Antes de decidir la etiqueta,
@@ -1071,6 +1226,11 @@ def send_pending_telegrams(
             article["telegram_sent"] = (
                 "true"
             )
+
+            if story_key:
+                sent_story_keys.add(
+                    story_key
+                )
 
             article[
                 "telegram_sent_at"
