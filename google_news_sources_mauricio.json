@@ -44,6 +44,7 @@
 {
   "id": "alianza_verde_john_amaya",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -58,6 +59,7 @@
 {
   "id": "alianza_verde_ariel_avila",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -73,6 +75,7 @@
 {
   "id": "alianza_verde_eduardo_enriquez_caicedo",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -88,6 +91,7 @@
 {
   "id": "alianza_verde_andrea_padilla",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -102,6 +106,7 @@
 {
   "id": "alianza_verde_jota_pe_hernandez",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -118,6 +123,7 @@
 {
   "id": "alianza_verde_duvalier_sanchez",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -133,6 +139,7 @@
 {
   "id": "alianza_verde_alejandra_abasolo",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -147,6 +154,7 @@
 {
   "id": "alianza_verde_victor_armero",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -162,6 +170,7 @@
 {
   "id": "alianza_verde_diego_garcia_alfonso",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -177,6 +186,7 @@
 {
   "id": "alianza_verde_yamit_noe_hurtado",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -192,6 +202,7 @@
 {
   "id": "alianza_verde_catherine_juvinao",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -207,6 +218,7 @@
 {
   "id": "alianza_verde_santiago_osorio_marin",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -222,6 +234,7 @@
 {
   "id": "alianza_verde_jaime_raul_salamanca",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [
@@ -238,6 +251,7 @@
 {
   "id": "alianza_verde_carlos_amaya",
   "tipo": "google_news_search",
+  "aceptar_match_rss": true,
   "termino": "Alianza Verde",
   "emoji": "🟢",
   "aliases": [

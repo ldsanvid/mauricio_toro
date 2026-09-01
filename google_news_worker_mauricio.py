@@ -15,6 +15,9 @@ from dotenv import load_dotenv
 
 from news_s3_store import load_state, save_state
 from telegram_utils import telegram_send_message
+import requests
+
+from googlenewsdecoder import gnewsdecoder
 
 load_dotenv()
 
@@ -148,6 +151,9 @@ def load_sources() -> list[dict]:
                 "contexto_requerido": (
                     rss.get("contexto_requerido") or []
                 ),
+                "aceptar_match_rss": (
+                    rss.get("aceptar_match_rss", False) is True
+                ),
                 "emoji": (
                     safe_text(rss.get("emoji"))
                     or "🔵"
@@ -170,6 +176,213 @@ def normalize_for_match(value: str) -> str:
     text = clean_html_text(value).lower()
     return re.sub(r"\s+", " ", text).strip()
 
+def normalize_story_component(value: str) -> str:
+    text = normalize_for_match(value)
+
+    text = re.sub(
+        r"[^\w\s]",
+        " ",
+        text,
+        flags=re.UNICODE,
+    )
+
+    return re.sub(
+        r"\s+",
+        " ",
+        text,
+    ).strip()
+
+
+def build_story_key(
+    title: str,
+    publisher: str,
+    published_dt: datetime,
+) -> str:
+
+    normalized_title = normalize_story_component(
+        title
+    )
+
+    normalized_publisher = normalize_story_component(
+        publisher
+    )
+
+    publication_date = (
+        published_dt
+        .astimezone(CO_TZ)
+        .date()
+        .isoformat()
+    )
+
+    canonical = "|".join([
+        normalized_title,
+        normalized_publisher,
+        publication_date,
+    ])
+
+    return hashlib.sha256(
+        canonical.encode("utf-8")
+    ).hexdigest()
+
+def decode_google_news_url(
+    google_url: str,
+) -> str:
+
+    google_url = safe_text(
+        google_url
+    )
+
+    if not google_url:
+        return ""
+
+    try:
+        result = gnewsdecoder(
+            google_url,
+            interval=1,
+        )
+
+        if (
+            isinstance(result, dict)
+            and result.get("status") is True
+        ):
+            return safe_text(
+                result.get("decoded_url")
+            )
+
+    except Exception as error:
+        print(
+            f"⚠️ No se pudo resolver URL Google News: {error}"
+        )
+
+    return ""
+
+
+def fetch_article_text(
+    url: str,
+) -> str:
+
+    url = safe_text(url)
+
+    if not url:
+        return ""
+
+    try:
+        response = requests.get(
+            url,
+            timeout=12,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 "
+                    "(Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) "
+                    "Chrome/131 Safari/537.36"
+                )
+            },
+        )
+
+        response.raise_for_status()
+
+        html_text = response.text
+
+        # Quitamos scripts y estilos antes de limpiar HTML.
+        html_text = re.sub(
+            r"<script\b[^>]*>.*?</script>",
+            " ",
+            html_text,
+            flags=re.I | re.S,
+        )
+
+        html_text = re.sub(
+            r"<style\b[^>]*>.*?</style>",
+            " ",
+            html_text,
+            flags=re.I | re.S,
+        )
+
+        return clean_html_text(
+            html_text
+        )
+
+    except Exception as error:
+        print(
+            f"⚠️ No se pudo leer artículo original: {error}"
+        )
+
+        return ""
+def article_mentions_mauricio(
+    article: dict,
+    mauricio_source: dict | None,
+) -> bool:
+
+    if not mauricio_source:
+        return False
+
+    aliases = (
+        mauricio_source.get(
+            "aliases",
+            [],
+        )
+        or []
+    )
+
+    exclusions = (
+        mauricio_source.get(
+            "exclusiones",
+            [],
+        )
+        or []
+    )
+
+    title = safe_text(
+        article.get("titulo")
+    )
+
+    summary = safe_text(
+        article.get("resumen_rss")
+    )
+
+    original_url = safe_text(
+        article.get("url_original")
+    )
+
+    body_text = safe_text(
+        article.get("texto_articulo")
+    )
+
+    combined = normalize_for_match(
+        " ".join([
+            title,
+            summary,
+            original_url,
+            body_text,
+        ])
+    )
+
+    # Exclusiones primero.
+    for excluded in exclusions:
+        excluded_norm = normalize_for_match(
+            excluded
+        )
+
+        if (
+            excluded_norm
+            and excluded_norm in combined
+        ):
+            return False
+
+    for alias in aliases:
+        alias_norm = normalize_for_match(
+            alias
+        )
+
+        if (
+            alias_norm
+            and alias_norm in combined
+        ):
+            return True
+
+    return False
 
 def classify_relevance(
     title: str,
@@ -177,6 +390,7 @@ def classify_relevance(
     aliases: list[str] | None = None,
     exclusions: list[str] | None = None,
     contexto_requerido: list[str] | None = None,
+    aceptar_match_rss: bool = False,
 ) -> tuple[bool, str]:
 
     combined = normalize_for_match(
@@ -218,6 +432,8 @@ def classify_relevance(
             break
 
     if not matched_alias:
+        if aceptar_match_rss:
+            return True, "match_rss_google_news"
         return False, "ningun_alias_detectado"
 
     # 3. Algunas fuentes, como Alianza Verde,
@@ -348,6 +564,12 @@ def refresh_existing_article_flags(
                         source_cfg.get(
                             "contexto_requerido",
                             [],
+                        )
+                    ),
+                    aceptar_match_rss=(
+                        source_cfg.get(
+                            "aceptar_match_rss",
+                            False,
                         )
                     ),
                 )
@@ -549,17 +771,328 @@ def format_telegram(
             )
         )
 
-    parts.append(
-        f"🔎 Término: {source_cfg['termino']}"
+    final_url = (
+        safe_text(
+            article.get("url_original")
+        )
+        or safe_text(
+            article.get("enlace")
+        )
     )
 
-    if article.get("enlace"):
+    if final_url:
         parts.append(
-            f"🔗 {article['enlace']}"
+            f"🔗 {final_url}"
         )
 
     return "\n".join(parts)
 
+def choose_telegram_source(
+    article: dict,
+    matches: list[dict],
+    sources: list[dict],
+) -> dict | None:
+
+    article_id = safe_text(
+        article.get("article_id")
+    )
+
+    title = safe_text(
+        article.get("titulo")
+    )
+
+    summary = safe_text(
+        article.get("resumen_rss")
+    )
+
+    source_by_rss = {
+        source["rss_id"]: source
+        for source in sources
+    }
+
+    mauricio_source = (
+        source_by_rss.get(
+            "mauricio_toro"
+        )
+    )
+
+    # PRIORIDAD ABSOLUTA:
+    # si Mauricio aparece en título, resumen,
+    # URL original o cuerpo del artículo.
+    if article_mentions_mauricio(
+        article,
+        mauricio_source,
+    ):
+        return mauricio_source
+
+    relevant_sources = []
+
+    for match in matches:
+        if (
+            safe_text(match.get("article_id"))
+            != article_id
+        ):
+            continue
+
+        rss_id = safe_text(
+            match.get("rss_id")
+        )
+
+        source_cfg = source_by_rss.get(
+            rss_id
+        )
+
+        if not source_cfg:
+            continue
+
+        match_relevant, _ = classify_relevance(
+            title,
+            summary,
+            aliases=source_cfg.get(
+                "aliases",
+                [],
+            ),
+            exclusions=source_cfg.get(
+                "exclusiones",
+                [],
+            ),
+            contexto_requerido=source_cfg.get(
+                "contexto_requerido",
+                [],
+            ),
+            aceptar_match_rss=source_cfg.get(
+                "aceptar_match_rss",
+                False,
+            ),
+        )
+
+        if match_relevant:
+            relevant_sources.append(
+                source_cfg
+            )
+
+    # Mauricio también gana si el propio RSS
+    # de Mauricio produjo un match válido.
+    for source_cfg in relevant_sources:
+        if (
+            source_cfg.get("rss_id")
+            == "mauricio_toro"
+        ):
+            return source_cfg
+
+    # Luego Alianza Verde general.
+    for source_cfg in relevant_sources:
+        if (
+            source_cfg.get("rss_id")
+            == "alianza_verde_general"
+        ):
+            return source_cfg
+
+    # Finalmente cualquier RSS individual.
+    for source_cfg in relevant_sources:
+        if source_cfg.get(
+            "enviar_telegram",
+            True,
+        ):
+            return source_cfg
+
+    return None
+
+def send_pending_telegrams(
+    articles: list[dict],
+    matches: list[dict],
+    sources: list[dict],
+    bootstrap: bool,
+    new_article_ids: set[str],
+) -> dict:
+
+    stats = {
+        "telegram_sent": 0,
+        "telegram_skipped_bootstrap": 0,
+    }
+    source_by_rss = {
+        source["rss_id"]: source
+        for source in sources
+    }
+
+    mauricio_source = (
+        source_by_rss.get(
+            "mauricio_toro"
+        )
+    )
+
+    for article in articles:
+        article_id = safe_text(
+            article.get("article_id")
+        )
+
+        if not article_id:
+            continue
+
+        relevant = (
+            safe_text(
+                article.get("relevante")
+            ).lower()
+            == "true"
+        )
+
+        operational = (
+            safe_text(
+                article.get("es_operativa")
+            ).lower()
+            == "true"
+        )
+
+        already_sent = (
+            safe_text(
+                article.get("telegram_sent")
+            ).lower()
+            == "true"
+        )
+
+        if (
+            not relevant
+            or not operational
+            or already_sent
+        ):
+            continue
+
+        # Antes de decidir la etiqueta,
+        # intentamos enriquecer la noticia.
+        # Esto sólo se hace para alertas pendientes.
+        if not article_mentions_mauricio(
+            article,
+            mauricio_source,
+        ):
+            google_url = safe_text(
+                article.get("enlace")
+            )
+
+            original_url = safe_text(
+                article.get("url_original")
+            )
+
+            if (
+                not original_url
+                and google_url
+            ):
+                original_url = (
+                    decode_google_news_url(
+                        google_url
+                    )
+                )
+
+                if original_url:
+                    article[
+                        "url_original"
+                    ] = original_url
+
+            if (
+                original_url
+                and not safe_text(
+                    article.get(
+                        "texto_articulo"
+                    )
+                )
+            ):
+                article[
+                    "texto_articulo"
+                ] = fetch_article_text(
+                    original_url
+                )
+
+        source_cfg = choose_telegram_source(
+            article=article,
+            matches=matches,
+            sources=sources,
+        )
+
+        if not source_cfg:
+            continue
+
+        if not source_cfg.get(
+            "enviar_telegram",
+            True,
+        ):
+            continue
+
+        article_is_new = (
+            article_id in new_article_ids
+        )
+
+        if (
+            bootstrap
+            and article_is_new
+            and not TELEGRAM_ON_BOOTSTRAP
+        ):
+            stats[
+                "telegram_skipped_bootstrap"
+            ] += 1
+
+            print(
+                "🧱 BOOTSTRAP: noticia guardada "
+                "sin enviar a Telegram"
+            )
+
+            continue
+
+        if not BOT_TOKEN or not CHAT_ID:
+            print(
+                "⚠️ Telegram no configurado; "
+                "noticia guardada en S3."
+            )
+            continue
+
+        published_dt = (
+            parse_existing_datetime(
+                article.get(
+                    "fecha_publicacion_utc"
+                )
+            )
+        )
+
+        if published_dt is not None:
+            article["_published_dt"] = (
+                published_dt
+            )
+
+        try:
+            message = format_telegram(
+                article,
+                source_cfg,
+            )
+
+            telegram_send_message(
+                bot_token=BOT_TOKEN,
+                chat_id=CHAT_ID,
+                text=message,
+            )
+
+            article["telegram_sent"] = (
+                "true"
+            )
+
+            article[
+                "telegram_sent_at"
+            ] = utc_iso(
+                utc_now()
+            )
+
+            stats["telegram_sent"] += 1
+
+            print(
+                "📨 Telegram enviado | "
+                f"{source_cfg['termino']} | "
+                f"{article.get('titulo', '')}"
+            )
+
+        except Exception as error:
+            print(
+                "❌ Telegram falló; "
+                f"noticia quedó guardada: {error}"
+            )
+
+    return stats
 
 def process_source(
     source_cfg: dict,
@@ -568,6 +1101,9 @@ def process_source(
     existing_article_ids: set[str],
     existing_match_keys: set[tuple[str, str, str]],
     bootstrap: bool,
+    new_article_ids: set[str],
+    article_by_story_key: dict[str, dict],
+    article_by_id: dict[str, dict],
 ) -> dict:
     print("-" * 100)
     print(
@@ -635,6 +1171,11 @@ def process_source(
                 link=link,
             )
         )
+        story_key = build_story_key(
+            title=title,
+            publisher=publisher,
+            published_dt=published_dt,
+        )
 
         summary = clean_html_text(
             getattr(entry, "summary", "")
@@ -656,13 +1197,34 @@ def process_source(
                 "contexto_requerido",
                 [],
             ),
+            aceptar_match_rss=source_cfg.get(
+                "aceptar_match_rss",
+                False,
+            ),
         )
         operational = is_operational_date(
             published_dt
         )
 
+        existing_id_article = (
+            article_by_id.get(
+                article_id
+            )
+        )
+
+        existing_story_article = (
+            article_by_story_key.get(
+                story_key
+            )
+        )
+
+        existing_article = (
+            existing_id_article
+            or existing_story_article
+        )
+
         article_is_new = (
-            article_id not in existing_article_ids
+            existing_article is None
         )
 
         if article_is_new:
@@ -670,6 +1232,9 @@ def process_source(
 
             article = {
                 "article_id": article_id,
+                "story_key": story_key,
+                "url_original": "",
+                "texto_articulo": "",
                 "google_entry_id": google_entry_id,
                 "fecha_publicacion_utc": utc_iso(
                     published_dt
@@ -693,7 +1258,20 @@ def process_source(
             }
 
             articles.append(article)
+
+            article_by_story_key[
+                story_key
+            ] = article
+
+            article_by_id[
+                article_id
+            ] = article
+
             existing_article_ids.add(
+                article_id
+            )
+
+            new_article_ids.add(
                 article_id
             )
 
@@ -708,31 +1286,39 @@ def process_source(
                 f"{title}"
             )
         else:
-            article = next(
-                (
-                    row
-                    for row in articles
-                    if row.get("article_id")
-                    == article_id
-                ),
-                None,
-            )
+            article = existing_article
 
             if article is not None:
+                # Conservamos el article_id de la primera
+                # copia registrada de esta historia.
+                article_id = safe_text(
+                    article.get("article_id")
+                )
+
                 article["_published_dt"] = (
                     published_dt
                 )
-                article["relevante"] = "true" if relevant else "false"
-                article["motivo_relevancia"] = relevance_reason
-                article["es_operativa"] = "true" if operational else "false"
+
+                article["es_operativa"] = (
+                    "true"
+                    if operational
+                    else "false"
+                )
 
         if article is None:
             continue
-
-        already_sent = (
-            safe_text(article.get("telegram_sent")).lower()
-            == "true"
-        )
+        if (
+            not article_is_new
+            and safe_text(
+                article.get("google_entry_id")
+            )
+            != safe_text(google_entry_id)
+        ):
+            print(
+                "🔁 DUPLICADO EDITORIAL UNIFICADO | "
+                f"{publisher or 'sin fuente'} | "
+                f"{title}"
+            )
 
         match_key = (
             article_id,
@@ -782,75 +1368,6 @@ def process_source(
                 f"{MONITORING_START_DATE.isoformat()}"
             )
 
-        should_send_telegram = (
-            relevant
-            and operational
-            and not already_sent
-            and source_cfg.get(
-                "enviar_telegram",
-                True,
-            )
-        )
-
-        # Telegram se intenta para cualquier artículo relevante y operativo
-        # que aún no haya quedado marcado como enviado.
-        if should_send_telegram:
-            if (
-                bootstrap
-                and article_is_new
-                and not TELEGRAM_ON_BOOTSTRAP
-            ):
-                stats[
-                    "telegram_skipped_bootstrap"
-                ] += 1
-                print(
-                    "🧱 BOOTSTRAP: noticia guardada "
-                    "sin enviar a Telegram"
-                )
-                continue
-
-            if not BOT_TOKEN or not CHAT_ID:
-                print(
-                    "⚠️ Telegram no configurado; "
-                    "noticia guardada en S3."
-                )
-                continue
-
-            try:
-                message = format_telegram(
-                    article,
-                    source_cfg,
-                )
-
-                telegram_send_message(
-                    bot_token=BOT_TOKEN,
-                    chat_id=CHAT_ID,
-                    text=message,
-                )
-
-                article["telegram_sent"] = (
-                    "true"
-                )
-                article[
-                    "telegram_sent_at"
-                ] = utc_iso(
-                    utc_now()
-                )
-
-                stats[
-                    "telegram_sent"
-                ] += 1
-
-                print(
-                    "📨 Telegram enviado"
-                )
-
-            except Exception as error:
-                print(
-                    "❌ Telegram falló; "
-                    f"noticia quedó guardada: {error}"
-                )
-
     return stats
 
 
@@ -888,6 +1405,51 @@ def run_once() -> None:
             row.get("article_id")
         )
     }
+    article_by_id = {
+        safe_text(
+            row.get("article_id")
+        ): row
+        for row in articles
+        if safe_text(
+            row.get("article_id")
+        )
+    }
+
+    article_by_story_key = {}
+
+    for row in articles:
+        story_key = safe_text(
+            row.get("story_key")
+        )
+
+        if not story_key:
+            published_dt = (
+                parse_existing_datetime(
+                    row.get(
+                        "fecha_publicacion_utc"
+                    )
+                )
+            )
+
+            if published_dt is not None:
+                story_key = build_story_key(
+                    title=safe_text(
+                        row.get("titulo")
+                    ),
+                    publisher=safe_text(
+                        row.get("fuente")
+                    ),
+                    published_dt=published_dt,
+                )
+
+                row["story_key"] = (
+                    story_key
+                )
+
+        if story_key:
+            article_by_story_key[
+                story_key
+            ] = row
 
     existing_match_keys = {
         (
@@ -906,6 +1468,8 @@ def run_once() -> None:
             row.get("article_id")
         )
     }
+
+    new_article_ids = set()
 
     print("=" * 100)
     print(
@@ -963,6 +1527,15 @@ def run_once() -> None:
                     existing_match_keys
                 ),
                 bootstrap=bootstrap,
+                new_article_ids=(
+                    new_article_ids
+                ),
+                article_by_story_key=(
+                    article_by_story_key
+                ),
+                article_by_id=(
+                    article_by_id
+                ),
             )
 
             for key in totals:
@@ -975,6 +1548,39 @@ def run_once() -> None:
                 f"({source_cfg.get('cliente_nombre')}): "
                 f"{error}"
             )
+
+    # Ahora que ya recorrimos TODOS los RSS,
+    # recalculamos relevancia utilizando todos
+    # los matches descubiertos en esta corrida.
+    final_flag_stats = refresh_existing_article_flags(
+        articles,
+        matches,
+        sources,
+    )
+
+    print(
+        "Clasificación final | "
+        f"relevantes={final_flag_stats['relevant']} | "
+        f"no_relevantes={final_flag_stats['irrelevant']}"
+    )
+
+    telegram_stats = send_pending_telegrams(
+        articles=articles,
+        matches=matches,
+        sources=sources,
+        bootstrap=bootstrap,
+        new_article_ids=new_article_ids,
+    )
+
+    totals["telegram_sent"] = (
+        telegram_stats["telegram_sent"]
+    )
+
+    totals[
+        "telegram_skipped_bootstrap"
+    ] = telegram_stats[
+        "telegram_skipped_bootstrap"
+    ]
 
     clean_internal_fields(
         articles
