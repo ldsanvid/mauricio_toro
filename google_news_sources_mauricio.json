@@ -27,22 +27,228 @@
         "activo": true,
         "enviar_telegram": true
       },
-      {
-        "id": "alianza_verde",
-        "tipo": "google_news_search",
-        "termino": "Alianza Verde",
-        "emoji": "🟢",
-        "aliases": [
-          "Alianza Verde",
-          "Partido Alianza Verde",
-          "Partido Verde"
-        ],
-        "exclusiones": [],
-        "contexto_requerido": [],
-        "url": "https://news.google.com/rss/search?q=(%22Alianza+Verde%22+OR+%22Partido+Verde%22)+Colombia&hl=es-419&gl=CO&ceid=CO:es-419",
-        "activo": true,
-        "enviar_telegram": true
-      }
+{
+  "id": "alianza_verde_general",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Alianza Verde"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Alianza+Verde%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_john_amaya",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "John Amaya"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22John+Amaya%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_ariel_avila",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Ariel Ávila",
+    "Ariel Avila"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Ariel+%C3%81vila%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_eduardo_enriquez_caicedo",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Eduardo Enríquez Caicedo",
+    "Eduardo Enriquez Caicedo"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Eduardo+Enr%C3%ADquez+Caicedo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_andrea_padilla",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Andrea Padilla"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Andrea+Padilla%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_jota_pe_hernandez",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Jota Pe Hernández",
+    "Jota Pe Hernandez",
+    "Jota Pe"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Jota+Pe+Hern%C3%A1ndez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_duvalier_sanchez",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Duvalier Sánchez",
+    "Duvalier Sanchez"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Duvalier+S%C3%A1nchez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_alejandra_abasolo",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Alejandra Abasolo"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Alejandra+Abasolo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_victor_armero",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Víctor Armero",
+    "Victor Armero"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Victor+Armero%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_diego_garcia_alfonso",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Diego García Alfonso",
+    "Diego Garcia Alfonso"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Diego+Garc%C3%ADa+Alfonso%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_yamit_noe_hurtado",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Yamit Noé Hurtado",
+    "Yamit Noe Hurtado"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Yamit+No%C3%A9+Hurtado%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_catherine_juvinao",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Catherine Juvinao",
+    "Cathy Juvinao"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=(%22Catherine+Juvinao%22+OR+%22Cathy+Juvinao%22)+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_santiago_osorio_marin",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Santiago Osorio Marín",
+    "Santiago Osorio Marin"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Santiago+Osorio+Mar%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_jaime_raul_salamanca",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Jaime Raúl Salamanca",
+    "Jaime Raul Salamanca",
+    "Jaime Salamanca"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Jaime+Ra%C3%BAl+Salamanca%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+},
+{
+  "id": "alianza_verde_carlos_amaya",
+  "tipo": "google_news_search",
+  "termino": "Alianza Verde",
+  "emoji": "🟢",
+  "aliases": [
+    "Carlos Amaya"
+  ],
+  "exclusiones": [],
+  "contexto_requerido": [],
+  "url": "https://news.google.com/rss/search?q=%22Carlos+Amaya%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+  "activo": true,
+  "enviar_telegram": true
+}
     ],
     "activo": true
   }
