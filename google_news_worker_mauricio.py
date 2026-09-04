@@ -490,6 +490,43 @@ def article_mentions_mauricio(
 
     return False
 
+def detect_trigger_term(
+    article: dict,
+    source_cfg: dict,
+) -> str:
+
+    combined = " ".join([
+        safe_text(article.get("titulo")),
+        safe_text(article.get("resumen_rss")),
+        safe_text(article.get("texto_articulo")),
+    ])
+
+    # Para radares temáticos queremos mostrar
+    # la palabra temática concreta.
+    for term in source_cfg.get(
+        "contexto_tematico",
+        [],
+    ):
+        if contains_match_term(
+            combined,
+            term,
+        ):
+            return term
+
+    # Para personas / partidos mostramos
+    # el alias concreto encontrado.
+    for alias in source_cfg.get(
+        "aliases",
+        [],
+    ):
+        if contains_match_term(
+            combined,
+            alias,
+        ):
+            return alias
+
+    return ""
+
 def classify_relevance(
     title: str,
     summary: str,
@@ -939,10 +976,23 @@ def format_telegram(
         or "🔵"
     )
 
+    trigger_term = detect_trigger_term(
+        article,
+        source_cfg,
+    )
+
     parts = [
         f"{emoji} {source_cfg['termino']}",
-        f"📰 {article['titulo']}",
     ]
+
+    if trigger_term:
+        parts.append(
+            f"🔎 Detectado: {trigger_term}"
+        )
+
+    parts.append(
+        f"📰 {article['titulo']}"
+    )
 
     if article.get("fuente"):
         parts.append(
@@ -1088,6 +1138,34 @@ def choose_telegram_source(
             return source_cfg
 
     return None
+
+def detect_trigger_location(
+    article: dict,
+    trigger_term: str,
+) -> str:
+
+    if not trigger_term:
+        return ""
+
+    if contains_match_term(
+        safe_text(article.get("titulo")),
+        trigger_term,
+    ):
+        return "titulo"
+
+    if contains_match_term(
+        safe_text(article.get("resumen_rss")),
+        trigger_term,
+    ):
+        return "resumen_rss"
+
+    if contains_match_term(
+        safe_text(article.get("texto_articulo")),
+        trigger_term,
+    ):
+        return "cuerpo"
+
+    return ""
 
 def send_pending_telegrams(
     articles: list[dict],
@@ -1313,6 +1391,22 @@ def send_pending_telegrams(
 
         if not source_cfg:
             continue
+        trigger_term = detect_trigger_term(
+            article,
+            source_cfg,
+        )
+        trigger_location = detect_trigger_location(
+            article,
+            trigger_term,
+        )
+
+        print(
+            "🔎 DIAGNÓSTICO ALERTA | "
+            f"categoria={source_cfg.get('termino')} | "
+            f"rss={source_cfg.get('rss_id')} | "
+            f"trigger={trigger_term or '[SOLO MATCH RSS]'} | "
+            f"titulo={article.get('titulo', '')}"
+        )
 
         if not source_allows_telegram_for_article(
             source_cfg,
