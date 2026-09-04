@@ -151,6 +151,9 @@ def load_sources() -> list[dict]:
                 "contexto_requerido": (
                     rss.get("contexto_requerido") or []
                 ),
+                "contexto_tematico": (
+                    rss.get("contexto_tematico") or []
+                ),
                 "aceptar_match_rss": (
                     rss.get("aceptar_match_rss", False) is True
                 ),
@@ -166,6 +169,9 @@ def load_sources() -> list[dict]:
                 "enviar_telegram": (
                     rss.get("enviar_telegram", True) is True
                 ),
+                "telegram_desde": safe_text(
+                    rss.get("telegram_desde")
+                ),
             })
 
     return sources
@@ -175,6 +181,41 @@ def load_sources() -> list[dict]:
 def normalize_for_match(value: str) -> str:
     text = clean_html_text(value).lower()
     return re.sub(r"\s+", " ", text).strip()
+
+def contains_match_term(
+    text: str,
+    term: str,
+) -> bool:
+
+    text_norm = normalize_for_match(
+        text
+    )
+
+    term_norm = normalize_for_match(
+        term
+    )
+
+    if not term_norm:
+        return False
+
+    # Para términos cortos como "IA",
+    # exigimos palabra completa.
+    if len(term_norm) <= 3:
+        pattern = (
+            r"(?<!\w)"
+            + re.escape(term_norm)
+            + r"(?!\w)"
+        )
+
+        return bool(
+            re.search(
+                pattern,
+                text_norm,
+                flags=re.UNICODE,
+            )
+        )
+
+    return term_norm in text_norm
 
 def normalize_story_component(value: str) -> str:
     text = normalize_for_match(value)
@@ -455,6 +496,7 @@ def classify_relevance(
     aliases: list[str] | None = None,
     exclusions: list[str] | None = None,
     contexto_requerido: list[str] | None = None,
+    contexto_tematico: list[str] | None = None,
     aceptar_match_rss: bool = False,
 ) -> tuple[bool, str]:
 
@@ -466,6 +508,9 @@ def classify_relevance(
     exclusions = exclusions or []
     contexto_requerido = (
         contexto_requerido or []
+    )
+    contexto_tematico = (
+        contexto_tematico or []
     )
 
     # 1. Exclusiones tienen prioridad.
@@ -496,25 +541,26 @@ def classify_relevance(
             matched_alias = alias
             break
 
+    matched_by_rss = False
+
     if not matched_alias:
         if aceptar_match_rss:
-            return True, "match_rss_google_news"
-        return False, "ningun_alias_detectado"
+            matched_by_rss = True
+        else:
+            return (
+                False,
+                "ningun_alias_detectado",
+            )
 
-    # 3. Algunas fuentes, como Alianza Verde,
-    # requieren además contexto para evitar
-    # homónimos o usos no políticos.
+    # 3. Algunas fuentes requieren además
+    # contexto geográfico o institucional.
     if contexto_requerido:
         context_found = False
 
         for context_term in contexto_requerido:
-            context_norm = normalize_for_match(
-                context_term
-            )
-
-            if (
-                context_norm
-                and context_norm in combined
+            if contains_match_term(
+                combined,
+                context_term,
             ):
                 context_found = True
                 break
@@ -524,6 +570,32 @@ def classify_relevance(
                 False,
                 "sin_contexto_requerido",
             )
+
+    # 4. Los radares temáticos pueden exigir
+    # además que la noticia realmente trate
+    # sobre el asunto monitoreado.
+    if contexto_tematico:
+        thematic_found = False
+
+        for thematic_term in contexto_tematico:
+            if contains_match_term(
+                combined,
+                thematic_term,
+            ):
+                thematic_found = True
+                break
+
+        if not thematic_found:
+            return (
+                False,
+                "sin_contexto_tematico",
+            )
+
+    if matched_by_rss:
+        return (
+            True,
+            "match_rss_google_news",
+        )
 
     return (
         True,
@@ -544,6 +616,49 @@ def parse_existing_datetime(value: str):
     except Exception:
         return None
 
+def source_allows_telegram_for_article(
+    source_cfg: dict,
+    article: dict,
+) -> bool:
+
+    if not source_cfg.get(
+        "enviar_telegram",
+        True,
+    ):
+        return False
+
+    telegram_desde = safe_text(
+        source_cfg.get(
+            "telegram_desde"
+        )
+    )
+
+    # Mauricio y Alianza Verde no tienen
+    # telegram_desde: mantienen su comportamiento.
+    if not telegram_desde:
+        return True
+
+    activation_dt = (
+        parse_existing_datetime(
+            telegram_desde
+        )
+    )
+
+    article_dt = (
+        parse_existing_datetime(
+            article.get(
+                "fecha_descarga_utc"
+            )
+        )
+    )
+
+    if (
+        activation_dt is None
+        or article_dt is None
+    ):
+        return False
+
+    return article_dt >= activation_dt
 
 def refresh_existing_article_flags(
     articles: list[dict],
@@ -628,6 +743,12 @@ def refresh_existing_article_flags(
                     contexto_requerido=(
                         source_cfg.get(
                             "contexto_requerido",
+                            [],
+                        )
+                    ),
+                    contexto_tematico=(
+                        source_cfg.get(
+                            "contexto_tematico",
                             [],
                         )
                     ),
@@ -926,6 +1047,10 @@ def choose_telegram_source(
                 "contexto_requerido",
                 [],
             ),
+            contexto_tematico=source_cfg.get(
+                "contexto_tematico",
+                [],
+            ),
             aceptar_match_rss=source_cfg.get(
                 "aceptar_match_rss",
                 False,
@@ -1111,6 +1236,30 @@ def send_pending_telegrams(
             )
 
             continue
+        
+        # Primero verificamos si esta noticia tiene
+        # algún match que realmente pueda producir
+        # una alerta de Telegram.
+        #
+        # Los radares de calibración tienen
+        # enviar_telegram=false, por lo que no tiene
+        # sentido resolver URLs ni descargar artículos.
+        preliminary_source = (
+            choose_telegram_source(
+                article=article,
+                matches=matches,
+                sources=sources,
+            )
+        )
+
+        if not preliminary_source:
+            continue
+
+        if not source_allows_telegram_for_article(
+            preliminary_source,
+            article,
+        ):
+            continue
 
         # Antes de decidir la etiqueta,
         # intentamos enriquecer la noticia.
@@ -1165,9 +1314,9 @@ def send_pending_telegrams(
         if not source_cfg:
             continue
 
-        if not source_cfg.get(
-            "enviar_telegram",
-            True,
+        if not source_allows_telegram_for_article(
+            source_cfg,
+            article,
         ):
             continue
 
@@ -1355,6 +1504,10 @@ def process_source(
             ),
             contexto_requerido=source_cfg.get(
                 "contexto_requerido",
+                [],
+            ),
+            contexto_tematico=source_cfg.get(
+                "contexto_tematico",
                 [],
             ),
             aceptar_match_rss=source_cfg.get(

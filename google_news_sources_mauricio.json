@@ -27,227 +27,1232 @@
         "activo": true,
         "enviar_telegram": true
       },
-{
-  "id": "alianza_verde_general",
-  "tipo": "google_news_search",
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Alianza Verde"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Alianza+Verde%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_john_amaya",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "John Amaya"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22John+Amaya%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_ariel_avila",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Ariel Ávila",
-    "Ariel Avila"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Ariel+%C3%81vila%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_eduardo_enriquez_caicedo",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Eduardo Enríquez Caicedo",
-    "Eduardo Enriquez Caicedo"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Eduardo+Enr%C3%ADquez+Caicedo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_andrea_padilla",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Andrea Padilla"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Andrea+Padilla%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_jota_pe_hernandez",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Jota Pe Hernández",
-    "Jota Pe Hernandez",
-    "Jota Pe"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Jota+Pe+Hern%C3%A1ndez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_duvalier_sanchez",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Duvalier Sánchez",
-    "Duvalier Sanchez"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Duvalier+S%C3%A1nchez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_alejandra_abasolo",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Alejandra Abasolo"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Alejandra+Abasolo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_victor_armero",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Víctor Armero",
-    "Victor Armero"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Victor+Armero%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_diego_garcia_alfonso",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Diego García Alfonso",
-    "Diego Garcia Alfonso"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Diego+Garc%C3%ADa+Alfonso%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_yamit_noe_hurtado",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Yamit Noé Hurtado",
-    "Yamit Noe Hurtado"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Yamit+No%C3%A9+Hurtado%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_catherine_juvinao",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Catherine Juvinao",
-    "Cathy Juvinao"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Catherine+Juvinao%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_santiago_osorio_marin",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Santiago Osorio Marín",
-    "Santiago Osorio Marin"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Santiago+Osorio+Mar%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-},
-{
-  "id": "alianza_verde_jaime_raul_salamanca",
-  "tipo": "google_news_search",
-  "aceptar_match_rss": true,
-  "termino": "Alianza Verde",
-  "emoji": "🟢",
-  "aliases": [
-    "Jaime Raúl Salamanca",
-    "Jaime Raul Salamanca",
-    "Jaime Salamanca"
-  ],
-  "exclusiones": [],
-  "contexto_requerido": [],
-  "url": "https://news.google.com/rss/search?q=%22Jaime+Ra%C3%BAl+Salamanca%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
-  "activo": true,
-  "enviar_telegram": true
-}
+      {
+        "id": "alianza_verde_general",
+        "tipo": "google_news_search",
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Alianza Verde"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Alianza+Verde%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_john_amaya",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "John Amaya"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22John+Amaya%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_ariel_avila",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Ariel Ávila",
+          "Ariel Avila"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Ariel+%C3%81vila%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_eduardo_enriquez_caicedo",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Eduardo Enríquez Caicedo",
+          "Eduardo Enriquez Caicedo"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Eduardo+Enr%C3%ADquez+Caicedo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_andrea_padilla",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Andrea Padilla"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Andrea+Padilla%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_jota_pe_hernandez",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Jota Pe Hernández",
+          "Jota Pe Hernandez",
+          "Jota Pe"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Jota+Pe+Hern%C3%A1ndez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_duvalier_sanchez",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Duvalier Sánchez",
+          "Duvalier Sanchez"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Duvalier+S%C3%A1nchez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_alejandra_abasolo",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Alejandra Abasolo"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Alejandra+Abasolo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_victor_armero",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Víctor Armero",
+          "Victor Armero"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Victor+Armero%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_diego_garcia_alfonso",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Diego García Alfonso",
+          "Diego Garcia Alfonso"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Diego+Garc%C3%ADa+Alfonso%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_yamit_noe_hurtado",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Yamit Noé Hurtado",
+          "Yamit Noe Hurtado"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Yamit+No%C3%A9+Hurtado%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_catherine_juvinao",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Catherine Juvinao",
+          "Cathy Juvinao"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Catherine+Juvinao%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_santiago_osorio_marin",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Santiago Osorio Marín",
+          "Santiago Osorio Marin"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Santiago+Osorio+Mar%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "alianza_verde_jaime_raul_salamanca",
+        "tipo": "google_news_search",
+        "aceptar_match_rss": true,
+        "termino": "Alianza Verde",
+        "emoji": "🟢",
+        "aliases": [
+          "Jaime Raúl Salamanca",
+          "Jaime Raul Salamanca",
+          "Jaime Salamanca"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "url": "https://news.google.com/rss/search?q=%22Jaime+Ra%C3%BAl+Salamanca%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true
+      },
+      {
+        "id": "tema_educacion_icetex",
+        "tipo": "google_news_search",
+        "termino": "ICETEX",
+        "emoji": "🎓",
+        "aliases": [
+          "ICETEX"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "contexto_tematico": [
+          "ICETEX",
+          "crédito educativo",
+          "créditos educativos",
+          "crédito estudiantil",
+          "becas ICETEX"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=ICETEX+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_emprendimiento_mipymes",
+        "tipo": "google_news_search",
+        "termino": "Emprendimiento",
+        "emoji": "🚀",
+        "aliases": [
+          "MiPymes",
+          "Mipyme",
+          "Mipymes"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Medellín",
+          "Cali",
+          "Barranquilla",
+          "Bucaramanga",
+          "Cartagena",
+          "Gobierno Nacional",
+          "MinCIT",
+          "Ministerio de Comercio",
+          "Bancóldex",
+          "Confecámaras",
+          "Cámara de Comercio"
+        ],
+        "contexto_tematico": [
+          "MiPymes",
+          "Mipyme",
+          "Mipymes",
+          "microempresa",
+          "microempresas",
+          "pequeñas empresas",
+          "medianas empresas",
+          "emprendimiento",
+          "emprendedores",
+          "startup",
+          "startups",
+          "microcrédito",
+          "capital semilla"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=MiPymes+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_tecnologia_ia",
+        "tipo": "google_news_search",
+        "termino": "Tecnología",
+        "emoji": "🤖",
+        "aliases": [
+          "inteligencia artificial",
+          "IA"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Medellín",
+          "Cali",
+          "Gobierno Nacional",
+          "Congreso",
+          "MinTIC",
+          "MinCiencias",
+          "Ministerio TIC",
+          "CRC"
+        ],
+        "contexto_tematico": [
+          "inteligencia artificial",
+          "IA",
+          "machine learning",
+          "aprendizaje automático",
+          "algoritmo",
+          "algoritmos",
+          "IA generativa"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22inteligencia+artificial%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_tecnologia_telecomunicaciones",
+        "tipo": "google_news_search",
+        "termino": "Tecnología",
+        "emoji": "🤖",
+        "aliases": [
+          "telecomunicaciones"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "MinTIC",
+          "Ministerio TIC",
+          "CRC",
+          "Comisión de Regulación de Comunicaciones"
+        ],
+        "contexto_tematico": [
+          "TIC",
+          "sector TIC",
+          "ANDICOM",
+          "telecomunicaciones",
+          "telecomunicación",
+          "conectividad",
+          "telefonía",
+          "internet",
+          "fibra óptica",
+          "red móvil",
+          "redes móviles",
+          "5G",
+          "espectro",
+          "operador móvil",
+          "operadores móviles",
+          "Claro",
+          "Movistar",
+          "Tigo",
+          "WOM"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=telecomunicaciones+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_economia_digital_fintech",
+        "tipo": "google_news_search",
+        "termino": "Economía digital",
+        "emoji": "💻",
+        "aliases": [
+          "fintech"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Medellín",
+          "Superfinanciera",
+          "Superintendencia Financiera",
+          "Banco de la República",
+          "MinHacienda",
+          "Ministerio de Hacienda"
+        ],
+        "contexto_tematico": [
+          "fintech",
+          "tecnología financiera",
+          "tecnologías financieras",
+          "pagos digitales",
+          "billetera digital",
+          "billeteras digitales",
+          "banca digital",
+          "neobanco",
+          "neobancos",
+          "open finance",
+          "finanzas digitales"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=fintech+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_seguridad_hurto_bogota",
+        "tipo": "google_news_search",
+        "termino": "Seguridad",
+        "emoji": "🚨",
+        "aliases": [
+          "hurto",
+          "robos",
+          "robo"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Bogotá",
+          "Distrito",
+          "TransMilenio",
+          "Policía Metropolitana",
+          "Policía de Bogotá",
+          "Secretaría de Seguridad",
+          "Usaquén",
+          "Chapinero",
+          "Santa Fe",
+          "San Cristóbal",
+          "Usme",
+          "Tunjuelito",
+          "Bosa",
+          "Kennedy",
+          "Fontibón",
+          "Engativá",
+          "Suba",
+          "Barrios Unidos",
+          "Teusaquillo",
+          "Los Mártires",
+          "Antonio Nariño",
+          "Puente Aranda",
+          "La Candelaria",
+          "Rafael Uribe Uribe",
+          "Ciudad Bolívar",
+          "Sumapaz"
+        ],
+        "contexto_tematico": [
+          "hurto",
+          "hurtaron",
+          "robó",
+          "robo",
+          "robos",
+          "robar",
+          "robaron",
+          "atraco",
+          "atracos",
+          "atracar",
+          "asaltaron",
+          "asaltante",
+          "asaltantes",
+          "ladrón",
+          "ladrones",
+          "fletero",
+          "fleteo",
+          "asalto",
+          "asaltar",
+          "asaltó"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=hurto+Bogot%C3%A1+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_salud_endometriosis",
+        "tipo": "google_news_search",
+        "termino": "Salud",
+        "emoji": "❤️",
+        "aliases": [
+          "endometriosis"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Congreso",
+          "Ministerio de Salud",
+          "Minsalud"
+        ],
+        "contexto_tematico": [
+          "endometriosis"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=endometriosis+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_bogota_campin",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "El Campín",
+          "Estadio El Campín",
+          "Nemesio Camacho El Campín",
+          "Nemesio Camacho Campín"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Bogotá",
+          "Distrito",
+          "Alcaldía",
+          "IDRD",
+          "Nemesio Camacho",
+          "El Campín"
+        ],
+        "contexto_tematico": [
+          "obra",
+          "obras",
+          "remodelación",
+          "renovación",
+          "infraestructura",
+          "concesión",
+          "contrato",
+          "APP",
+          "IDRD",
+          "Distrito",
+          "Alcaldía",
+          "restricciones",
+          "operativo",
+          "seguridad",
+          "movilidad",
+          "desvíos",
+          "concierto",
+          "evento"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22El+Camp%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_bogota_ptar_canoas",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "PTAR Canoas",
+          "Canoas"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "contexto_tematico": [
+          "PTAR Canoas",
+          "planta de tratamiento Canoas",
+          "planta Canoas",
+          "tratamiento de aguas residuales",
+          "río Bogotá"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22PTAR+Canoas%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_bogota_presupuesto_2027",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "Presupuesto Bogotá 2027",
+          "presupuesto de Bogotá",
+          "presupuesto distrital"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Bogotá",
+          "Distrito",
+          "distrital",
+          "Alcaldía de Bogotá",
+          "Concejo de Bogotá",
+          "Hacienda Distrital",
+          "Secretaría Distrital de Hacienda"
+        ],
+        "contexto_tematico": [
+          "presupuesto",
+          "presupuesto 2027",
+          "vigencia 2027",
+          "proyecto de presupuesto",
+          "recursos"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=presupuesto+Bogot%C3%A1+2027+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_educacion_superior",
+        "tipo": "google_news_search",
+        "termino": "Educación",
+        "emoji": "🎓",
+        "aliases": [
+          "educación superior",
+          "universidades"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Ministerio de Educación",
+          "MinEducación",
+          "MEN"
+        ],
+        "contexto_tematico": [
+          "educación superior",
+          "universidad",
+          "universidades",
+          "estudiantes universitarios",
+          "matrícula universitaria"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22educaci%C3%B3n+superior%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_educacion_tecnica_sena",
+        "tipo": "google_news_search",
+        "termino": "Educación",
+        "emoji": "🎓",
+        "aliases": [
+          "SENA",
+          "educación técnica",
+          "educación tecnológica"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "SENA",
+          "Ministerio de Educación",
+          "MinEducación"
+        ],
+        "contexto_tematico": [
+          "SENA",
+          "educación técnica",
+          "educación tecnológica",
+          "formación técnica",
+          "formación tecnológica",
+          "formación para el trabajo"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=SENA+educaci%C3%B3n+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_tecnologia_transformacion_digital",
+        "tipo": "google_news_search",
+        "termino": "Tecnología",
+        "emoji": "🤖",
+        "aliases": [
+          "transformación digital",
+          "gobierno digital"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "MinTIC",
+          "Ministerio TIC",
+          "Gobierno Nacional"
+        ],
+        "contexto_tematico": [
+          "transformación digital",
+          "gobierno digital",
+          "servicios digitales",
+          "digitalización",
+          "trámites digitales",
+          "Estado digital",
+          "servicios públicos digitales"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22transformaci%C3%B3n+digital%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_economia_digital_cripto",
+        "tipo": "google_news_search",
+        "termino": "Economía digital",
+        "emoji": "💻",
+        "aliases": [
+          "criptoactivos",
+          "activos virtuales",
+          "criptomonedas"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Superfinanciera",
+          "Superintendencia Financiera",
+          "Banco de la República",
+          "MinHacienda"
+        ],
+        "contexto_tematico": [
+          "criptoactivo",
+          "criptoactivos",
+          "activo virtual",
+          "activos virtuales",
+          "criptomoneda",
+          "criptomonedas",
+          "bitcoin",
+          "ethereum",
+          "blockchain"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=criptoactivos+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_seguridad_extorsion_bogota",
+        "tipo": "google_news_search",
+        "termino": "Seguridad",
+        "emoji": "🚨",
+        "aliases": [
+          "extorsión",
+          "extorsiones"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Bogotá",
+          "Distrito",
+          "Policía de Bogotá",
+          "Policía Metropolitana",
+          "Secretaría de Seguridad",
+          "Usaquén",
+          "Chapinero",
+          "Santa Fe",
+          "San Cristóbal",
+          "Usme",
+          "Tunjuelito",
+          "Bosa",
+          "Kennedy",
+          "Fontibón",
+          "Engativá",
+          "Suba",
+          "Barrios Unidos",
+          "Teusaquillo",
+          "Los Mártires",
+          "Antonio Nariño",
+          "Puente Aranda",
+          "La Candelaria",
+          "Rafael Uribe Uribe",
+          "Ciudad Bolívar"
+        ],
+        "contexto_tematico": [
+          "extorsión",
+          "extorsiones",
+          "extorsionar",
+          "extorsionistas",
+          "vacuna",
+          "cobro extorsivo"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=extorsi%C3%B3n+Bogot%C3%A1+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_seguridad_camaras_bogota",
+        "tipo": "google_news_search",
+        "termino": "Seguridad",
+        "emoji": "🚨",
+        "aliases": [
+          "cámaras de seguridad",
+          "videovigilancia"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Bogotá",
+          "Distrito",
+          "Alcaldía de Bogotá",
+          "Secretaría de Seguridad",
+          "Policía de Bogotá"
+        ],
+        "contexto_tematico": [
+          "cámaras de seguridad",
+          "cámara de seguridad",
+          "videovigilancia",
+          "cámaras de vigilancia",
+          "reconocimiento facial",
+          "centro de monitoreo"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22c%C3%A1maras+de+seguridad%22+Bogot%C3%A1+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_diversidad_lgbtiq",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "LGBTIQ",
+          "LGBT",
+          "diversidad sexual"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Congreso",
+          "Corte Constitucional"
+        ],
+        "contexto_tematico": [
+          "LGBTIQ",
+          "LGBTI",
+          "LGBT",
+          "diversidad sexual",
+          "orientación sexual",
+          "identidad de género",
+          "discriminación",
+          "homofobia",
+          "transfobia",
+          "derechos de parejas del mismo sexo"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=LGBTIQ+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"    
+      },
+      {
+        "id": "tema_salud_etiquetado_frontal",
+        "tipo": "google_news_search",
+        "termino": "Salud",
+        "emoji": "❤️",
+        "aliases": [
+          "etiquetado frontal",
+          "sellos de advertencia"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Ministerio de Salud",
+          "Minsalud",
+          "Invima"
+        ],
+        "contexto_tematico": [
+          "etiquetado frontal",
+          "sellos de advertencia",
+          "sello de advertencia",
+          "etiquetado nutricional",
+          "alimentos ultraprocesados"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22etiquetado+frontal%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_salud_asbesto",
+        "tipo": "google_news_search",
+        "termino": "Salud",
+        "emoji": "❤️",
+        "aliases": [
+          "asbesto",
+          "amianto"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Ministerio de Salud",
+          "Minsalud",
+          "Congreso"
+        ],
+        "contexto_tematico": [
+          "asbesto",
+          "amianto",
+          "exposición al asbesto",
+          "prohibición del asbesto"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=asbesto+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_bogota_rio_bogota",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "Río Bogotá",
+          "rio Bogotá"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "contexto_tematico": [
+          "Río Bogotá",
+          "rio Bogotá",
+          "contaminación del río",
+          "descontaminación",
+          "saneamiento",
+          "aguas residuales"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22R%C3%ADo+Bogot%C3%A1%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_energia_soberania",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "soberanía energética"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "contexto_tematico": [
+          "soberanía energética",
+          "seguridad energética",
+          "autosuficiencia energética",
+          "transición energética",
+          "abastecimiento energético"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22soberan%C3%ADa+energ%C3%A9tica%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_bogota_carlos_fernando_galan",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "Carlos Fernando Galán",
+          "Carlos Fernando Galan",
+          "Galán"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "contexto_tematico": [],
+        "aceptar_match_rss": false,
+        "url": "https://news.google.com/rss/search?q=%22Carlos+Fernando+Gal%C3%A1n%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_bogota_clara_lucia_sandoval",
+        "tipo": "google_news_search",
+        "termino": "Política",
+        "emoji": "🏛️",
+        "aliases": [
+          "Clara Lucía Sandoval",
+          "Clara Lucia Sandoval"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [],
+        "contexto_tematico": [],
+        "aceptar_match_rss": false,
+        "url": "https://news.google.com/rss/search?q=%22Clara+Luc%C3%ADa+Sandoval%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_emprendimiento_startups",
+        "tipo": "google_news_search",
+        "termino": "Emprendimiento",
+        "emoji": "🚀",
+        "aliases": [
+          "startup",
+          "startups",
+          "emprendimiento"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Medellín",
+          "Cali",
+          "Barranquilla",
+          "MinCIT",
+          "Ministerio de Comercio",
+          "Bancóldex",
+          "Cámara de Comercio"
+        ],
+        "contexto_tematico": [
+          "startup",
+          "startups",
+          "emprendimiento",
+          "emprendedores",
+          "capital semilla",
+          "capital emprendedor"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=startups+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_emprendimiento_microempresas",
+        "tipo": "google_news_search",
+        "termino": "Emprendimiento",
+        "emoji": "🚀",
+        "aliases": [
+          "microempresa",
+          "microempresas"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Medellín",
+          "Cali",
+          "Barranquilla",
+          "MinCIT",
+          "Ministerio de Comercio",
+          "Bancóldex",
+          "Cámara de Comercio"
+        ],
+        "contexto_tematico": [
+          "microempresa",
+          "microempresas",
+          "microempresario",
+          "microempresarios",
+          "pequeñas empresas",
+          "micronegocio",
+          "micronegocios",
+          "microcrédito"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=microempresas+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_tecnologia_innovacion",
+        "tipo": "google_news_search",
+        "termino": "Tecnología",
+        "emoji": "🤖",
+        "aliases": [
+          "innovación tecnológica",
+          "innovación"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "MinTIC",
+          "Ministerio TIC"
+        ],
+        "contexto_tematico": [
+          "innovación tecnológica",
+          "tecnología",
+          "tecnologías emergentes",
+          "desarrollo tecnológico",
+          "ecosistema tecnológico",
+          "innovación digital"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=innovaci%C3%B3n+tecnolog%C3%ADa+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_tecnologia_gobierno_digital",
+        "tipo": "google_news_search",
+        "termino": "Tecnología",
+        "emoji": "🤖",
+        "aliases": [
+          "gobierno digital",
+          "servicios digitales"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Gobierno Nacional",
+          "MinTIC",
+          "Ministerio TIC"
+        ],
+        "contexto_tematico": [
+          "gobierno digital",
+          "Estado digital",
+          "servicios digitales",
+          "trámites digitales",
+          "trámites en línea",
+          "digitalización del Estado",
+          "servicios públicos digitales"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22gobierno+digital%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_tecnologia_notarias",
+        "tipo": "google_news_search",
+        "termino": "Tecnología",
+        "emoji": "🤖",
+        "aliases": [
+          "notarías",
+          "notaría digital"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Superintendencia de Notariado",
+          "Supernotariado"
+        ],
+        "contexto_tematico": [
+          "notaría",
+          "notarías",
+          "notaría digital",
+          "notarías digitales",
+          "trámite notarial",
+          "trámites notariales",
+          "servicios notariales",
+          "digitalización"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=notar%C3%ADas+tecnolog%C3%ADa+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_economia_digital_plataformas",
+        "tipo": "google_news_search",
+        "termino": "Economía digital",
+        "emoji": "💻",
+        "aliases": [
+          "plataformas digitales",
+          "plataforma digital"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Gobierno Nacional",
+          "Congreso",
+          "MinTIC",
+          "Ministerio TIC"
+        ],
+        "contexto_tematico": [
+          "plataformas digitales",
+          "plataforma digital",
+          "economía de plataformas",
+          "trabajadores de plataformas",
+          "aplicaciones digitales",
+          "apps de transporte",
+          "apps de reparto"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22plataformas+digitales%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      },
+      {
+        "id": "tema_economia_digital_colaborativa",
+        "tipo": "google_news_search",
+        "termino": "Economía digital",
+        "emoji": "💻",
+        "aliases": [
+          "economía colaborativa",
+          "economía de plataformas"
+        ],
+        "exclusiones": [],
+        "contexto_requerido": [
+          "Colombia",
+          "Bogotá",
+          "Gobierno Nacional",
+          "Congreso",
+          "MinTIC"
+        ],
+        "contexto_tematico": [
+          "economía colaborativa",
+          "economía de plataformas",
+          "plataformas digitales",
+          "trabajo en plataformas",
+          "trabajadores de plataformas",
+          "aplicaciones de transporte",
+          "aplicaciones de reparto"
+        ],
+        "aceptar_match_rss": true,
+        "url": "https://news.google.com/rss/search?q=%22econom%C3%ADa+colaborativa%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
+        "activo": true,
+        "enviar_telegram": true,
+        "telegram_desde": "2026-09-04T02:05:00Z"
+      }
     ],
     "activo": true
   }
