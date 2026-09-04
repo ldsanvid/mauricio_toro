@@ -1400,11 +1400,32 @@ def send_pending_telegrams(
             trigger_term,
         )
 
+        rss_id = safe_text(
+            source_cfg.get("rss_id")
+        )
+
+        is_alianza_source = (
+            rss_id == "alianza_verde_general"
+            or rss_id.startswith("alianza_verde_")
+        )
+
+        if (
+            is_alianza_source
+            and not trigger_term
+        ):
+            print(
+                "🚫 ALIANZA VERDE SIN CONFIRMACIÓN | "
+                f"rss={rss_id} | "
+                f"titulo={article.get('titulo', '')}"
+            )
+            continue
+
         print(
             "🔎 DIAGNÓSTICO ALERTA | "
             f"categoria={source_cfg.get('termino')} | "
             f"rss={source_cfg.get('rss_id')} | "
             f"trigger={trigger_term or '[SOLO MATCH RSS]'} | "
+            f"ubicacion={trigger_location or '-'} | "
             f"titulo={article.get('titulo', '')}"
         )
 
@@ -1479,6 +1500,18 @@ def send_pending_telegrams(
                 "telegram_sent_at"
             ] = utc_iso(
                 utc_now()
+            )
+
+            # Checkpoint inmediato:
+            # limpiamos campos internos antes
+            # de persistir el envío.
+            clean_internal_fields(
+                articles
+            )
+
+            save_state(
+                articles=articles,
+                matches=matches,
             )
 
             stats["telegram_sent"] += 1
