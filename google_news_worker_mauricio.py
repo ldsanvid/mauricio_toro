@@ -15,9 +15,11 @@ from dotenv import load_dotenv
 
 from news_s3_store import load_state, save_state
 from telegram_utils import telegram_send_message
+from social_worker_mauricio import run_once as run_x_once
 import requests
 
 from googlenewsdecoder import gnewsdecoder
+
 
 load_dotenv()
 
@@ -2045,11 +2047,34 @@ def run_once() -> None:
     )
     print("=" * 100)
 
+def run_all_once() -> None:
+
+    print("\n" + "=" * 100)
+    print("CICLO GENERAL | GOOGLE NEWS + X")
+    print("=" * 100)
+
+    # GOOGLE NEWS
+    try:
+        run_once()
+
+    except Exception as error:
+        print(
+            f"❌ ERROR GOOGLE NEWS: {error}"
+        )
+
+    # X
+    try:
+        run_x_once()
+
+    except Exception as error:
+        print(
+            f"❌ ERROR X: {error}"
+        )
 
 def run_forever() -> None:
     while True:
         try:
-            run_once()
+            run_all_once()
 
         except KeyboardInterrupt:
             print(
@@ -2059,7 +2084,7 @@ def run_forever() -> None:
 
         except Exception as error:
             print(
-                f"❌ ERROR EN CICLO: {error}"
+                f"❌ ERROR EN CICLO GENERAL: {error}"
             )
 
         time.sleep(
@@ -2087,7 +2112,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.once:
-        run_once()
+        run_all_once()
     else:
         run_forever()
 
