@@ -1,0 +1,20 @@
+[
+  {
+    "id": "abelardo_de_la_espriella",
+    "nombre": "Abelardo de la Espriella",
+    "plataforma": "x",
+    "username": "ABDELAESPRIELLA",
+    "emoji": "🔴",
+    "activo": true,
+    "enviar_telegram": true
+  },
+  {
+    "id": "carlos_fernando_galan",
+    "nombre": "Carlos Fernando Galán",
+    "plataforma": "x",
+    "username": "CarlosFGalan",
+    "emoji": "🔵",
+    "activo": true,
+    "enviar_telegram": true
+  }
+]
