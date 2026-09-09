@@ -166,7 +166,7 @@ def format_telegram(
     )
 
     return "\n".join([
-        f"X {source.get('emoji', '🐦')}",
+        f"✖️ {source.get('emoji', '🐦')}",
         f"{source['nombre']}",
         "",
         f"📝 {post.get('text', '')}",
