@@ -227,12 +227,24 @@ def classify_video(
         f"{title} {description}"
     )
 
+    person_sources = {
+        "youtube_abelardo",
+        "youtube_mtoro",
+        "youtube_carlos_galan",
+    }
+
+    exclusion_text = (
+        title
+        if source.get("id") in person_sources
+        else combined
+    )
+
     for excluded in source.get(
         "exclude_terms",
         [],
     ):
         if contains_term(
-            combined,
+            exclusion_text,
             excluded,
         ):
             return (
