@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from news_s3_store import load_state, save_state
 from telegram_utils import telegram_send_message
 from social_worker_mauricio import run_once as run_x_once
+from youtube_worker_mauricio import run_once as run_youtube_once
 import requests
 
 from googlenewsdecoder import gnewsdecoder
@@ -2050,7 +2051,10 @@ def run_once() -> None:
 def run_all_once() -> None:
 
     print("\n" + "=" * 100)
-    print("CICLO GENERAL | GOOGLE NEWS + X")
+    print(
+        "CICLO GENERAL | "
+        "GOOGLE NEWS + X + YOUTUBE"
+    )
     print("=" * 100)
 
     # GOOGLE NEWS
@@ -2070,6 +2074,17 @@ def run_all_once() -> None:
         print(
             f"❌ ERROR X: {error}"
         )
+
+    # YOUTUBE
+    try:
+        run_youtube_once(
+            force=False
+        )
+
+    except Exception as error:
+        print(
+            f"❌ ERROR YOUTUBE: {error}"
+        )   
 
 def run_forever() -> None:
     while True:

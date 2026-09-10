@@ -1,0 +1,104 @@
+{
+  "client": "Mauricio Toro",
+  "platform": "youtube",
+  "check_interval_seconds": 9000,
+  "region_code": "CO",
+  "relevance_language": "es",
+  "max_results": 50,
+  "sources": [
+    {
+      "id": "youtube_icetex",
+      "category": "ICETEX",
+      "query": "\"ICETEX\"",
+      "trigger_terms": [
+        "ICETEX"
+      ],
+      "required_terms": [
+        "ICETEX"
+      ],
+      "check_interval_seconds": 10800,
+      "active": true
+    },
+    {
+      "id": "youtube_politica",
+      "category": "Política",
+      "query": "\"Congreso de Colombia\"|\"Cámara de Representantes de Colombia\"|\"Senado de Colombia\"",
+      "trigger_terms": [
+        "Congreso de Colombia",
+        "Cámara de Representantes",
+        "Senado de Colombia"
+      ],
+      "required_terms": [
+        "Congreso de Colombia",
+        "Cámara de Representantes",
+        "Senado de Colombia"
+      ],
+      "exclude_terms": [
+        "humor",
+        "meme",
+        "parodia"
+      ],
+      "check_interval_seconds": 10800,
+      "active": true
+    },
+    {
+      "id": "youtube_abelardo",
+      "category": "Abelardo de la Espriella",
+      "query": "\"Abelardo de la Espriella\"",
+      "trigger_terms": [
+        "Abelardo de la Espriella",
+        "De La Espriella",
+        "De la Espriella",
+        "Abelardo",
+        "Presidente de Colombia"
+      ],
+      "required_terms": [
+        "Abelardo de la Espriella",
+        "De La Espriella",
+        "De la Espriella",
+        "Abelardo"
+      ],
+      "exclude_terms": [
+        "humor",
+        "meme",
+        "memes",
+        "parodia"
+      ],
+      "check_interval_seconds": 3600,
+      "active": true
+    },
+    {
+      "id": "youtube_mtoro",
+      "category": "Mauricio Toro",
+      "query": "\"Mauricio Toro\"",
+      "trigger_terms": [
+        "Mauricio Toro"
+      ],
+      "required_terms": [
+        "Mauricio Toro"
+      ],
+      "check_interval_seconds": 10800,
+      "active": true
+    },
+    {
+      "id": "youtube_carlos_galan",
+      "category": "Carlos Fernando Galán",
+      "query": "\"Carlos Fernando Galán\"",
+      "trigger_terms": [
+        "Carlos Fernando Galán",
+        "Carlos F. Galán",
+        "Carlos Galán",
+        "Alcalde de Bogotá"
+      ],
+      "required_terms": [
+        "Carlos Fernando Galán",
+        "Carlos F. Galán",
+        "Carlos Galán",
+        "Galán",
+        "Alcalde de Bogotá"
+      ],
+      "check_interval_seconds": 3600,
+      "active": true
+    }
+  ]
+}
