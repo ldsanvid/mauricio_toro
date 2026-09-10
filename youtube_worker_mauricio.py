@@ -257,14 +257,6 @@ def classify_video(
         [],
     )
 
-    # Para personas, exigimos que el término
-    # aparezca en el TÍTULO.
-    person_sources = {
-        "youtube_abelardo",
-        "youtube_mtoro",
-        "youtube_carlos_galan",
-    }
-
     if source.get("id") in person_sources:
 
         for term in required:
@@ -413,6 +405,275 @@ def format_date(
     except Exception:
         return value
 
+def youtube_alert_quality_gate(
+    title,
+    description,
+    channel_title,
+    source,
+):
+    """
+    Segunda barrera:
+    el video ya es relevante por tema/persona,
+    pero aquí decidimos si tiene suficiente
+    valor de asuntos públicos para Telegram.
+    """
+
+    title_norm = normalize(title)
+    description_norm = normalize(description)
+    channel_norm = normalize(channel_title)
+
+    combined = f"{title_norm} {description_norm}"
+
+    # Por ahora aplicamos esta exigencia
+    # solamente a las búsquedas de personas.
+    person_sources = {
+        "youtube_abelardo",
+        "youtube_mtoro",
+        "youtube_carlos_galan",
+    }
+
+    if source.get("id") not in person_sources:
+        return True, "tema_sin_quality_gate"
+
+    # -------------------------------------------------
+    # 1. FUENTES DE ALTO VALOR / CÍRCULO ROJO
+    # -------------------------------------------------
+
+    preferred_channels = [
+        "el espectador",
+        "el tiempo",
+        "semana",
+        "vanguardia",
+        "pulzo",
+        "caracol",
+        "blu radio",
+        "noticias rcn",
+        "noticias uno",
+        "cambio",
+        "la silla vacía",
+        "la silla vacia",
+        "wradio",
+        "la w",
+        "rcn radio",
+        "canal 1",
+        "canal capital",
+        "citytv",
+        "red+",
+        "red mas",
+        "cablenoticias",
+        "tercer canal",
+        "ntn24",
+        "canal institucional",
+        "forbes colombia",
+        "valora analitik",
+        "la república",
+        "la republica",
+        "portafolio",
+        "elespectador",
+        "el colombiano",
+        "el país",
+        "el pais",
+        "razón pública",
+        "razon publica",
+        "cuestión pública",
+        "cuestion publica",
+    ]
+
+    if any(
+        term in channel_norm
+        for term in preferred_channels
+    ):
+        return True, "fuente_prioritaria"
+
+    # -------------------------------------------------
+    # 2. INSTITUCIONES, ACADEMIA, ONG, GREMIOS
+    # -------------------------------------------------
+
+    institutional_channel_terms = [
+        "eps",
+        "universidad",
+        "fundación",
+        "fundacion",
+        "instituto",
+        "observatorio",
+        "centro de estudios",
+        "cámara de comercio",
+        "camara de comercio",
+        "congreso",
+        "senado",
+        "cámara de representantes",
+        "camara de representantes",
+        "presidencia",
+        "ministerio",
+        "alcaldía",
+        "alcaldia",
+        "gobernación",
+        "gobernacion",
+        "procuraduría",
+        "procuraduria",
+        "contraloría",
+        "contraloria",
+        "fiscalía",
+        "fiscalia",
+        "defensoría",
+        "defensoria",
+        "corte constitucional",
+        "consejo de estado",
+        "onu",
+        "naciones unidas",
+        "oea",
+        "bid",
+        "banco mundial",
+        "caf",
+        "fedesarollo",
+        "fedesarrollo",
+        "andi",
+        "fenalco",
+        "moe",
+        "misión de observación electoral",
+        "mision de observacion electoral",
+        "dejusticia",
+        "transparencia por colombia",
+        "human rights watch",
+        "amnistía internacional",
+        "amnistia internacional",
+        "fundación para la libertad de prensa",
+        "flip",
+        "ideas para la paz",
+        "fip",
+        "cifras y conceptos",
+        "invamer",
+        "yanhaas",
+        "cámara colombiana",
+        "camara colombiana",
+        "asobancaria",
+        "acemi",
+        "andi",
+        "fenalco",
+        "camacol",
+    ]
+
+    if any(
+        term in channel_norm
+        for term in institutional_channel_terms
+    ):
+        return True, "fuente_institucional"
+
+    # -------------------------------------------------
+    # 3. CONTENIDO SUSTANTIVO
+    # -------------------------------------------------
+
+    substantive_terms = [
+        "decreto",
+        "ley",
+        "reforma",
+        "congreso",
+        "senado",
+        "cámara",
+        "camara",
+        "corte",
+        "fiscalía",
+        "fiscalia",
+        "procuraduría",
+        "procuraduria",
+        "contraloría",
+        "contraloria",
+        "investigación",
+        "investigacion",
+        "denuncia",
+        "demanda",
+        "fallo",
+        "sentencia",
+        "presupuesto",
+        "contrato",
+        "contratación",
+        "contratacion",
+        "licitación",
+        "licitacion",
+        "nombramiento",
+        "ministro",
+        "ministra",
+        "gabinete",
+        "política pública",
+        "politica publica",
+        "impuesto",
+        "tributaria",
+        "pensión",
+        "pension",
+        "pensiones",
+        "fonpet",
+        "reconstrucción",
+        "reconstruccion",
+        "terremoto",
+        "seguridad",
+        "extradición",
+        "extradicion",
+        "porte de armas",
+        "relaciones internacionales",
+        "marco rubio",
+        "estados unidos",
+        "encuesta",
+        "aprobación",
+        "aprobacion",
+        "desaprobación",
+        "desaprobacion",
+        "gasto público",
+        "gasto publico",
+        "recursos públicos",
+        "recursos publicos",
+    ]
+
+    substantive_hits = sum(
+        1
+        for term in substantive_terms
+        if term in combined
+    )
+
+    # -------------------------------------------------
+    # 4. SEÑALES DE CONTENIDO DE BAJO VALOR
+    # -------------------------------------------------
+
+    low_value_terms = [
+        "meme",
+        "memes",
+        "humor",
+        "parodia",
+        "reaccionando",
+        "reacción",
+        "reaccion",
+        "destrozó",
+        "destrozo",
+        "humilló",
+        "humillo",
+        "dejó callado",
+        "dejo callado",
+        "no vas a creer",
+        "última hora",
+        "ultima hora",
+        "bombazo",
+        "se robó",
+        "se robo",
+        "se robará",
+        "se robara",
+        "ateo",
+    ]
+
+    low_value_hits = sum(
+        1
+        for term in low_value_terms
+        if term in title_norm
+    )
+
+    if low_value_hits >= 1 and substantive_hits < 2:
+        return False, "contenido_bajo_valor"
+
+    # Fuente desconocida:
+    # sólo pasa si la pieza contiene
+    # varias señales sustantivas.
+    if substantive_hits >= 2:
+        return True, f"contenido_sustantivo:{substantive_hits}"
+
+    return False, "fuente_no_prioritaria_y_bajo_valor"
 
 def format_telegram(
     video,
@@ -775,6 +1036,33 @@ def run_once(
                     )
                     continue
 
+                alertable, alert_reason = (
+                    youtube_alert_quality_gate(
+                        title=title,
+                        description=description,
+                        channel_title=video[
+                            "channel_title"
+                        ],
+                        source=source,
+                    )
+                )
+
+                if not alertable:
+                    print(
+                        "🟡 YOUTUBE RELEVANTE SIN ALERTA | "
+                        f"{alert_reason} | "
+                        f"{video['channel_title']} | "
+                        f"{title}"
+                    )
+                    continue
+
+                print(
+                    "🎯 YOUTUBE ALERTABLE | "
+                    f"{alert_reason} | "
+                    f"{video['channel_title']} | "
+                    f"{title}"
+                )
+
                 total_relevant += 1
 
                 print(
@@ -906,7 +1194,7 @@ def main():
 
     if args.once:
         run_once(
-            force=False
+            force=True
         )
     else:
         run_once(
