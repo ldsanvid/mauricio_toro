@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import os
 from typing import Iterable
 
@@ -24,6 +25,9 @@ MATCHES_S3_KEY = os.getenv(
 
 ARTICLE_FIELDS = [
     "article_id",
+    "story_key",
+    "url_original",
+    "texto_articulo",
     "google_entry_id",
     "fecha_publicacion_utc",
     "fecha_descarga_utc",
@@ -164,3 +168,27 @@ def save_state(
         matches_sorted,
         MATCH_FIELDS,
     )
+
+
+def load_json_state(key: str) -> tuple[dict, bool]:
+    require_bucket()
+    try:
+        response = s3_client.get_object(Bucket=AWS_S3_BUCKET, Key=key)
+        raw = response["Body"].read().decode("utf-8-sig")
+        return json.loads(raw), True
+    except ClientError as error:
+        code = error.response.get("Error", {}).get("Code", "")
+        if code in {"404", "NoSuchKey", "NotFound"}:
+            return {}, False
+        raise
+
+
+def save_json_state(key: str, payload: dict) -> None:
+    require_bucket()
+    s3_client.put_object(
+        Bucket=AWS_S3_BUCKET,
+        Key=key,
+        Body=json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8"),
+        ContentType="application/json; charset=utf-8",
+    )
+    print(f"☁️ S3 actualizado: s3://{AWS_S3_BUCKET}/{key}")
