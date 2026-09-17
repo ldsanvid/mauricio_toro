@@ -3,3 +3,4 @@ python-dotenv
 requests
 boto3
 googlenewsdecoder
+openai
