@@ -1,4 +1,5 @@
 feedparser
+youtube-transcript-api
 python-dotenv
 requests
 boto3
