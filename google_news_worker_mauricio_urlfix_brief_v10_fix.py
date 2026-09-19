@@ -2199,13 +2199,9 @@ def run_all_once() -> None:
         )
 
     # 2. X
-    try:
-        run_x_once()
-
-    except Exception as error:
-        print(
-            f"❌ ERROR X: {error}"
-        )
+    # PAUSADO TEMPORALMENTE:
+    # no consulta la API de X y no genera notificaciones.
+    print("⏸️ X | monitoreo pausado | API=NO | Telegram=NO")
 
     # 3. YOUTUBE
     # Debe correr ANTES del brief para que los videos
