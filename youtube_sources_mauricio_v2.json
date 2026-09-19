@@ -1,0 +1,138 @@
+{
+  "client": "Mauricio Toro",
+  "platform": "youtube",
+  "mode": "channel_watch",
+  "lookback_hours": 24,
+  "max_results_per_channel": 15,
+  "channels": [
+    {
+      "id": "noticias_rcn",
+      "name": "Noticias RCN",
+      "url": "https://www.youtube.com/@NoticiasRCN",
+      "active": true
+    },
+    {
+      "id": "noticias_caracol",
+      "name": "Noticias Caracol",
+      "url": "https://www.youtube.com/@noticiascaracol",
+      "active": true
+    },
+    {
+      "id": "caracol_radio",
+      "name": "Caracol Radio",
+      "url": "https://www.youtube.com/@CaracolRadioOficial",
+      "active": true
+    },
+    {
+      "id": "la_fm",
+      "name": "La FM Colombia",
+      "url": "https://www.youtube.com/@LaFMColombia",
+      "active": true
+    },
+    {
+      "id": "daniel_coronell",
+      "name": "Daniel Coronell",
+      "url": "https://www.youtube.com/@DanielCoronellPeriodista",
+      "active": true
+    },
+    {
+      "id": "a_fondo_duzan",
+      "name": "A Fondo con María Jimena Duzán",
+      "url": "https://www.youtube.com/@AFondoconmariajimenaduzan",
+      "active": true
+    },
+    {
+      "id": "blu_radio",
+      "name": "Blu Radio",
+      "url": "https://www.youtube.com/@bluradioco",
+      "active": true
+    },
+    {
+      "id": "la_silla_vacia",
+      "name": "La Silla Vacía",
+      "url": "https://www.youtube.com/@lasillavaciavideo",
+      "active": true
+    },
+    {
+      "id": "rtvc_noticias",
+      "name": "RTVC Noticias",
+      "url": "https://www.youtube.com/@RTVCNoticias",
+      "active": true
+    },
+    {
+      "id": "los_danieles",
+      "name": "Los Danieles",
+      "url": "https://www.youtube.com/@LosDanielesOp",
+      "active": true
+    },
+    {
+      "id": "atemporal",
+      "name": "Atemporal Podcast",
+      "url": "https://www.youtube.com/@atemporalpodcast",
+      "active": true
+    },
+    {
+      "id": "el_tiempo",
+      "name": "El Tiempo",
+      "url": "https://www.youtube.com/eltiempo",
+      "active": true
+    },
+    {
+      "id": "revista_raya",
+      "name": "Revista RAYA",
+      "url": "https://www.youtube.com/@revistaraya",
+      "active": true
+    }
+  ],
+  "axes": {
+    "Educación": [
+      "educación",
+      "SENA",
+      "universidad",
+      "colegio"
+    ],
+    "Emprendimiento": [
+      "emprendimiento",
+      "emprendedores",
+      "startup"
+    ],
+    "Tecnología": [
+      "tecnología",
+      "inteligencia artificial",
+      "IA"
+    ],
+    "Economía digital": [
+      "fintech",
+      "economía digital",
+      "pagos digitales",
+      "Bre-B",
+      "cripto",
+      "plataformas digitales"
+    ],
+    "ICETEX": [
+      "ICETEX"
+    ],
+    "Bogotá / Alcaldía": [
+      "Bogotá",
+      "Alcaldía de Bogotá"
+    ],
+    "Carlos Fernando Galán": [
+      "Carlos Fernando Galán",
+      "Carlos Galán",
+      "alcalde Galán"
+    ],
+    "LGBTIQ+": [
+      "LGBTIQ",
+      "LGBTQ",
+      "LGBT",
+      "diversidad sexual",
+      "identidad de género"
+    ]
+  },
+  "priority_person": {
+    "name": "Mauricio Toro",
+    "terms": [
+      "Mauricio Toro"
+    ]
+  }
+}
