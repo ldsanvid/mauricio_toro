@@ -49,8 +49,8 @@ MAX_YOUTUBE_CANDIDATES = int(os.getenv("MAURICIO_BRIEF_MAX_YOUTUBE_CANDIDATES", 
 MAX_TELEGRAM_CHARS = int(os.getenv("MAURICIO_BRIEF_MAX_CHARS", "3700"))
 MAX_HISTORY_BULLETS = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_BULLETS", "24"))
 MAX_HISTORY_TITLES = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_TITLES", "30"))
-MAX_HISTORY_EVENTS = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_EVENTS", "60"))
-EVENT_HISTORY_HOURS = int(os.getenv("MAURICIO_BRIEF_EVENT_HISTORY_HOURS", "72"))
+MAX_HISTORY_EVENTS = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_EVENTS", "200"))
+EVENT_HISTORY_HOURS = int(os.getenv("MAURICIO_BRIEF_EVENT_HISTORY_HOURS", "168"))
 
 YOUTUBE_TOPIC_OVERRIDES = {
     "ICETEX": "Educación",
@@ -424,6 +424,38 @@ def trim_message(message, max_chars=MAX_TELEGRAM_CHARS):
         result = result[: max_chars - 1].rstrip() + "…"
     return result
 
+
+def dedupe_reported_events(events):
+    """
+    Deduplicación conservadora de la memoria persistida.
+    Sólo colapsa eventos cuyo texto normalizado es idéntico; no intenta decidir
+    semánticamente si dos desarrollos parecidos son el mismo hecho.
+    Conserva la versión más reciente.
+    """
+    unique = {}
+    order = []
+    for raw in events or []:
+        if not isinstance(raw, dict):
+            continue
+        event = safe_text(raw.get("event"))
+        if not event:
+            continue
+        key = " ".join(sorted(normalize_title_tokens(event)))
+        if not key:
+            continue
+        if key not in unique:
+            order.append(key)
+        old_ts = safe_text(unique.get(key, {}).get("reported_at_utc"))
+        new_ts = safe_text(raw.get("reported_at_utc"))
+        if key not in unique or new_ts >= old_ts:
+            unique[key] = {
+                "event": event,
+                "topic": safe_text(raw.get("topic")),
+                "reported_at_utc": new_ts,
+            }
+    return [unique[key] for key in order if key in unique]
+
+
 def load_brief_history():
     """
     Memoria híbrida:
@@ -553,6 +585,97 @@ REGLAS:
             kept.append(row)
 
     return kept, excluded
+
+
+
+def semantic_intrapool_dedupe(candidates):
+    """
+    Elimina coberturas del mismo acontecimiento dentro del pool superviviente,
+    antes de la selección editorial. Conserva una representante por evento.
+    """
+    if len(candidates) <= 1:
+        return candidates, []
+
+    payload = []
+    for i, row in enumerate(candidates, start=1):
+        payload.append({
+            "id": i,
+            "titulo": safe_text(row.get("titulo")),
+            "medio": safe_text(row.get("fuente")),
+            "resumen": safe_text(row.get("resumen_rss"))[:700],
+            "temas": row.get("temas", []),
+            "tipo": safe_text(row.get("content_type")) or "noticia",
+        })
+
+    prompt = f"""
+Agrupa únicamente las candidatas que describan EL MISMO ACONTECIMIENTO sustantivo.
+
+CANDIDATAS:
+{json.dumps(payload, ensure_ascii=False)}
+
+REGLAS:
+- No agrupes por compartir persona, institución o tema.
+- Dos piezas son duplicadas sólo si cuentan esencialmente el mismo hecho.
+- Si una pieza aporta un desarrollo material distinto, consérvala como evento separado.
+- Para cada grupo duplicado conserva una sola candidata, prefiriendo la que tenga
+  información más específica y autosuficiente.
+- Si hay duda, NO agrupes.
+- Devuelve SOLO JSON válido:
+{{"grupos":[{{"conservar_id":1,"excluir_ids":[2,3],"razon":"breve"}}]}}
+""".strip()
+
+    client = OpenAI()
+    response = client.responses.create(
+        model=BRIEF_MODEL,
+        input=[
+            {
+                "role": "system",
+                "content": "Eres un deduplicador conservador de acontecimientos periodísticos. Devuelve exclusivamente JSON válido.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+    )
+    raw = safe_text(getattr(response, "output_text", ""))
+    if raw.startswith("```"):
+        raw = raw.strip("`")
+        if raw.lower().startswith("json"):
+            raw = raw[4:].strip()
+
+    try:
+        data = json.loads(raw)
+    except Exception as error:
+        print(f"⚠️ BRIEF | dedupe semántico interno inválido ({error}); no se excluye ninguna candidata.")
+        return candidates, []
+
+    exclude = {}
+    for group in data.get("grupos", []):
+        if not isinstance(group, dict):
+            continue
+        try:
+            keep_id = int(group.get("conservar_id"))
+        except Exception:
+            continue
+        if not (1 <= keep_id <= len(candidates)):
+            continue
+        reason = safe_text(group.get("razon"))
+        for raw_id in group.get("excluir_ids", []):
+            try:
+                idx = int(raw_id)
+            except Exception:
+                continue
+            if 1 <= idx <= len(candidates) and idx != keep_id:
+                exclude[idx] = reason
+
+    kept, removed = [], []
+    for i, row in enumerate(candidates, start=1):
+        if i in exclude:
+            removed.append({
+                "titulo": safe_text(row.get("titulo")),
+                "razon": exclude[i],
+            })
+        else:
+            kept.append(row)
+    return kept, removed
 
 
 def build_prompt(candidates, history=None):
@@ -738,13 +861,17 @@ def format_message(result, candidates, now_co):
             )
             url = html.escape(row["url"], quote=True)
 
-            marker = "🎥" if safe_text(row.get("content_type")).lower() == "video" else "•"
+            is_video = safe_text(row.get("content_type")).lower() == "video"
             if url:
-                lines.append(
-                    f'<a href="{url}">{marker} {title}</a> — {source}'
-                )
+                if is_video:
+                    lines.append(f'VIDEO ▶️ <a href="{url}">{title}</a> — {source}')
+                else:
+                    lines.append(f'• <a href="{url}">{title}</a> — {source}')
             else:
-                lines.append(f"{marker} {title} — {source}")
+                if is_video:
+                    lines.append(f"VIDEO ▶️ {title} — {source}")
+                else:
+                    lines.append(f"• {title} — {source}")
     return trim_message("\n".join(lines).strip())
 
 
@@ -767,6 +894,14 @@ def build_current_brief():
     if removed_events:
         print(f"🧠 BRIEF | acontecimientos ya reportados excluidos: {len(removed_events)}")
         for item in removed_events:
+            print(f"   ♻️ {item['titulo'][:105]} | {item['razon']}")
+    if not candidates:
+        return now_co, candidates, None, None
+
+    candidates, removed_pool = semantic_intrapool_dedupe(candidates)
+    if removed_pool:
+        print(f"🧩 BRIEF | duplicados del mismo acontecimiento dentro del pool excluidos: {len(removed_pool)}")
+        for item in removed_pool:
             print(f"   ♻️ {item['titulo'][:105]} | {item['razon']}")
     if not candidates:
         return now_co, candidates, None, None
@@ -828,7 +963,37 @@ def run_if_due(force=False):
     if not candidates:
         print("ℹ️ BRIEF | no hay novedades después de excluir historias ya comunicadas; no se envía.")
         return False
+
+    candidates, removed_events = semantic_event_prefilter(candidates, history=history)
+    if removed_events:
+        print(f"🧠 BRIEF | acontecimientos ya reportados excluidos: {len(removed_events)}")
+        for item in removed_events:
+            print(f"   ♻️ {item['titulo'][:105]} | {item['razon']}")
+    if not candidates:
+        print("ℹ️ BRIEF | no hay acontecimientos nuevos después del filtro semántico; no se envía.")
+        return False
+
+    candidates, removed_pool = semantic_intrapool_dedupe(candidates)
+    if removed_pool:
+        print(f"🧩 BRIEF | duplicados del mismo acontecimiento dentro del pool excluidos: {len(removed_pool)}")
+        for item in removed_pool:
+            print(f"   ♻️ {item['titulo'][:105]} | {item['razon']}")
+    if not candidates:
+        print("ℹ️ BRIEF | no hay acontecimientos únicos después del dedupe interno; no se envía.")
+        return False
+
     result = generate_brief(candidates, history=history)
+    print(
+        f"🧾 BRIEF | bullets={len(result.get('bullets', []))} | "
+        f"seleccion_ids={len(result.get('seleccion_ids', []))}"
+    )
+    if result.get("bullets") and not result.get("seleccion_ids"):
+        print(
+            "⚠️ BRIEF | se generaron bullets pero no quedó ninguna fuente "
+            "seleccionada. No se envía y el corte queda pendiente para reintento."
+        )
+        return False
+
     resolve_selected_urls(result, candidates)
     telegram_send_html_message(
         bot_token=BOT_TOKEN,
@@ -861,7 +1026,7 @@ def run_if_due(force=False):
                 if 1 <= int(idx) <= len(candidates)
             ]
         )[-MAX_HISTORY_TITLES:],
-        "reported_events": (
+        "reported_events": dedupe_reported_events(
             history.get("events", [])
             + [
                 {
