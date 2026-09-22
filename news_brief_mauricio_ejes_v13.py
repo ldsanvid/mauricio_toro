@@ -368,14 +368,17 @@ def load_youtube_candidates():
     return rows[:MAX_YOUTUBE_CANDIDATES]
 def resolve_selected_urls(result, candidates):
     """
-    Garantiza URL final sólo para las notas ya seleccionadas.
-    Prioridad:
-      1) url_original persistida por el worker.
-      2) Si aún queda Google News, decodifica en memoria.
-      3) Si falla, conserva la URL existente.
+    Garantiza URL final sólo para las notas seleccionadas.
 
-    No usa OpenAI y no modifica S3.
-    Como máximo intenta MAX_NOTES URLs por brief.
+    Prioridad:
+      1) Usa la URL que ya trae el candidato.
+      2) Si todavía es Google News, la decodifica con googlenewsdecoder.
+      3) Si la resolución funciona, sustituye la URL en memoria.
+      4) Si falla, conserva la URL existente.
+
+    No modifica S3.
+    No usa OpenAI.
+    Sólo procesa contenidos seleccionados para el brief.
     """
     for idx in result.get("seleccion_ids", []):
         try:
@@ -383,22 +386,50 @@ def resolve_selected_urls(result, candidates):
         except Exception:
             continue
 
+        # Los videos de YouTube ya traen su URL final.
+        if safe_text(row.get("content_type")).lower() == "video":
+            continue
+
         current_url = safe_text(row.get("url"))
-        if not current_url or "news.google.com" not in current_url:
+
+        if not current_url:
+            continue
+
+        # Si ya tenemos URL final, no hacemos nada.
+        if "news.google.com" not in current_url:
             continue
 
         try:
             decoded = gnewsdecoder(current_url, interval=1)
-            if isinstance(decoded, dict) and decoded.get("status") is True:
+
+            if (
+                    isinstance(decoded, dict)
+                    and (
+                        decoded.get("success") is True
+                        or decoded.get("status") is True
+                    )
+                ):
                 final_url = safe_text(decoded.get("decoded_url"))
+
                 if final_url and "news.google.com" not in final_url:
                     row["url"] = final_url
+
+                    print(
+                        "🔗 BRIEF | URL FINAL RESUELTA | "
+                        f"{safe_text(row.get('fuente'))} | {final_url}"
+                    )
+                    continue
+
+            print(
+                "⚠️ BRIEF | decoder no devolvió URL final | "
+                f"{safe_text(row.get('titulo'))}"
+            )
+
         except Exception as error:
             print(
                 "⚠️ BRIEF | no se pudo resolver URL seleccionada | "
                 f"{safe_text(row.get('titulo'))} | {error}"
             )
-
 
 def trim_message(message, max_chars=MAX_TELEGRAM_CHARS):
     """Mantiene el brief en un solo mensaje de Telegram."""
