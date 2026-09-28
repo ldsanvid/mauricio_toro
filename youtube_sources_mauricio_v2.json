@@ -78,9 +78,45 @@
       "active": true
     },
     {
-      "id": "revista_raya",
-      "name": "Revista RAYA",
-      "url": "https://www.youtube.com/@revistaraya",
+      "id": "el_espectador",
+      "name": "El Espectador",
+      "url": "https://www.youtube.com/@ElEspectador",
+      "active": true
+    },
+    {
+      "id": "semana",
+      "name": "Semana",
+      "url": "https://www.youtube.com/@Revista_Semana",
+      "active": true
+    },
+    {
+      "id": "cambio",
+      "name": "CAMBIO",
+      "url": "https://www.youtube.com/@estoescambio",
+      "active": true
+    },
+    {
+      "id": "infobae",
+      "name": "Infobae",
+      "url": "https://www.youtube.com/@Infobae",
+      "active": true
+    },
+    {
+      "id": "pais_cali",
+      "name": "El País de Cali",
+      "url": "https://www.youtube.com/@elpaiscali",
+      "active": true
+    },
+    {
+      "id": "heraldo",
+      "name": "El Heraldo",
+      "url": "https://www.youtube.com/@ELHERALDOTV",
+      "active": true
+    },
+    {
+      "id": "colombiano",
+      "name": "El Colombiano",
+      "url": "https://www.youtube.com/@PeriodicoElColombiano_",
       "active": true
     }
   ],
