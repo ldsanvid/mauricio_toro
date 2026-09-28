@@ -1,0 +1,70 @@
+[
+  {
+    "username": "NoticiasRCN",
+    "nombre": "Noticias RCN"
+  },
+  {
+    "username": "NoticiasCaracol",
+    "nombre": "Noticias Caracol"
+  },
+  {
+    "username": "CaracolRadio",
+    "nombre": "Caracol Radio"
+  },
+  {
+    "username": "lafm",
+    "nombre": "La FM"
+  },
+  {
+    "username": "DCoronell",
+    "nombre": "Daniel Coronell"
+  },
+  {
+    "username": "MJDuzan",
+    "nombre": "María Jimena Duzán"
+  },
+  {
+    "username": "BluRadioCo",
+    "nombre": "Blu Radio"
+  },
+  {
+    "username": "lasillavacia",
+    "nombre": "La Silla Vacía"
+  },
+  {
+    "username": "RTVCnoticias",
+    "nombre": "RTVC Noticias"
+  },
+  {
+    "username": "ELTIEMPO",
+    "nombre": "El Tiempo"
+  },
+  {
+    "username": "elespectador",
+    "nombre": "El Espectador"
+  },
+  {
+    "username": "RevistaSemana",
+    "nombre": "Revista Semana"
+  },
+  {
+    "username": "estoescambio",
+    "nombre": "Cambio"
+  },
+  {
+    "username": "infobaecolombia",
+    "nombre": "Infobae Colombia"
+  },
+  {
+    "username": "elpaiscali",
+    "nombre": "El País Cali"
+  },
+  {
+    "username": "elheraldoco",
+    "nombre": "El Heraldo"
+  },
+  {
+    "username": "elcolombiano",
+    "nombre": "El Colombiano"
+  }
+]
