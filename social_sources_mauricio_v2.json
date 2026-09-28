@@ -1,0 +1,19 @@
+[
+  {"id":"noticias_rcn","nombre":"Noticias RCN","plataforma":"x","username":"NoticiasRCN","activo":true},
+  {"id":"noticias_caracol","nombre":"Noticias Caracol","plataforma":"x","username":"NoticiasCaracol","activo":true},
+  {"id":"caracol_radio","nombre":"Caracol Radio","plataforma":"x","username":"CaracolRadio","activo":true},
+  {"id":"la_fm","nombre":"La FM","plataforma":"x","username":"lafm","activo":true},
+  {"id":"daniel_coronell","nombre":"Daniel Coronell","plataforma":"x","username":"DCoronell","activo":true},
+  {"id":"maria_jimena_duzan","nombre":"María Jimena Duzán","plataforma":"x","username":"MJDuzan","activo":true},
+  {"id":"blu_radio","nombre":"Blu Radio","plataforma":"x","username":"BluRadioCo","activo":true},
+  {"id":"la_silla_vacia","nombre":"La Silla Vacía","plataforma":"x","username":"lasillavacia","activo":true},
+  {"id":"rtvc_noticias","nombre":"RTVC Noticias","plataforma":"x","username":"RTVCnoticias","activo":true},
+  {"id":"el_tiempo","nombre":"El Tiempo","plataforma":"x","username":"ELTIEMPO","activo":true},
+  {"id":"el_espectador","nombre":"El Espectador","plataforma":"x","username":"elespectador","activo":true},
+  {"id":"revista_semana","nombre":"Revista Semana","plataforma":"x","username":"RevistaSemana","activo":true},
+  {"id":"cambio","nombre":"CAMBIO","plataforma":"x","username":"estoescambio","activo":true},
+  {"id":"infobae_colombia","nombre":"Infobae Colombia","plataforma":"x","username":"infobaecolombia","activo":true},
+  {"id":"el_pais_cali","nombre":"El País Cali","plataforma":"x","username":"elpaiscali","activo":true},
+  {"id":"el_heraldo","nombre":"El Heraldo","plataforma":"x","username":"elheraldoco","activo":true},
+  {"id":"el_colombiano","nombre":"El Colombiano","plataforma":"x","username":"elcolombiano","activo":true}
+]
