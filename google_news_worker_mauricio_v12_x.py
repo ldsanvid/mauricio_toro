@@ -17,7 +17,7 @@ from news_s3_store import load_state, save_state
 from telegram_utils import telegram_send_message
 from x_worker_mauricio_v2 import run_cycle as run_x_cycle
 from youtube_worker_mauricio_v6 import run as run_youtube
-from news_brief_mauricio_ejes_v14 import run_if_due as run_news_brief_if_due
+from news_brief_mauricio_ejes_v16 import run_if_due as run_news_brief_if_due
 import requests
 
 from googlenewsdecoder import gnewsdecoder
