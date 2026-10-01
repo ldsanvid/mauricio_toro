@@ -78,7 +78,7 @@ X_TOPIC_KEYWORDS = {
     "Alcalde Galán": ("carlos fernando galán", "carlos fernando galan", "@carlosfgalan"),
     "Alcaldía de Bogotá": ("el campín", "el campin", "metro de bogotá", "metro de bogota", "alcaldía de bogotá", "alcaldia de bogota", "ptar canoas", "río bogotá", "rio bogota", "presupuesto de bogotá", "presupuesto de bogota"),
     "Seguridad": ("porte de armas", "hurto", "extorsión", "extorsion", "cámaras de seguridad", "camaras de seguridad", "seguridad en bogotá", "seguridad en bogota"),
-    "Diversidad": ("lgbti", "lgbtq", "trans", "reafirmación de género", "reafirmacion de genero", "equal rights coalition", "diversidad sexual"),
+    "Diversidad": ("lgbti","lgbtiq","lgbtiq+", "lgbtq", "trans", "reafirmación de género", "reafirmacion de genero", "equal rights coalition", "erc" , "diversidad sexual"),
     "Energía": ("energía", "energia", "soberanía energética", "soberania energetica"),
 }
 
