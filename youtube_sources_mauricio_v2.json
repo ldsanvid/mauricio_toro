@@ -12,6 +12,12 @@
       "active": true
     },
     {
+      "id": "nota_politica",
+      "name": "Nota Política",
+      "url": "https://www.youtube.com/@notapolitica_1",
+      "active": true
+    },
+    {
       "id": "noticias_caracol",
       "name": "Noticias Caracol",
       "url": "https://www.youtube.com/@noticiascaracol",
