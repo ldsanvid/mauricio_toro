@@ -31,7 +31,8 @@ BASE_DIR = Path(__file__).resolve().parent
 SOURCES_FILE = BASE_DIR / os.getenv("MAURICIO_NEWS_SOURCES_FILE", "google_news_sources_mauricio.json")
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 CHAT_ID = (
-    os.getenv("TELEGRAM_CHAT_ID_MAURICIO", "").strip()
+    os.getenv("TELEGRAM_CHAT_ID_MAURICIO_RADAR", "").strip()
+    or os.getenv("TELEGRAM_CHAT_ID_MAURICIO", "").strip()
     or os.getenv("TELEGRAM_CHAT_ID_ALERTAS", "").strip()
     or os.getenv("TELEGRAM_CHAT_ID_DEFAULT", "").strip()
 )
