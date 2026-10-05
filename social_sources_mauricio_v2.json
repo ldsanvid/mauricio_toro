@@ -2,6 +2,7 @@
   {"id":"noticias_rcn","nombre":"Noticias RCN","plataforma":"x","username":"NoticiasRCN","activo":true},
   {"id":"noticias_caracol","nombre":"Noticias Caracol","plataforma":"x","username":"NoticiasCaracol","activo":true},
   {"id":"caracol_radio","nombre":"Caracol Radio","plataforma":"x","username":"CaracolRadio","activo":true},
+  {"id":"últimaHoraCaracol","nombre":"Última hora Caracol Radio","plataforma":"x","username":"UltimaHoraCR","activo":true},  
   {"id":"la_fm","nombre":"La FM","plataforma":"x","username":"lafm","activo":true},
   {"id":"daniel_coronell","nombre":"Daniel Coronell","plataforma":"x","username":"DCoronell","activo":true},
   {"id":"maria_jimena_duzan","nombre":"María Jimena Duzán","plataforma":"x","username":"MJDuzan","activo":true},
