@@ -3,5 +3,6 @@ youtube-transcript-api
 python-dotenv
 requests
 boto3
-googlenewsdecoder
+googlenewsdecoder==0.1.7
+selectolax==0.4.12
 openai
