@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import os
+import tempfile
 from typing import Iterable
 
 import boto3
@@ -77,6 +78,10 @@ def object_exists(key: str) -> bool:
 def load_csv(key: str) -> tuple[list[dict], bool]:
     """
     Devuelve (filas, existe_en_s3).
+
+    V2 memory-safe:
+    Lee el objeto de S3 como stream de texto en lugar de crear primero
+    una copia completa en bytes + otra copia completa como str + StringIO.
     """
     require_bucket()
 
@@ -85,8 +90,19 @@ def load_csv(key: str) -> tuple[list[dict], bool]:
             Bucket=AWS_S3_BUCKET,
             Key=key,
         )
-        raw = response["Body"].read().decode("utf-8-sig")
-        rows = list(csv.DictReader(io.StringIO(raw)))
+
+        body = response["Body"]
+        text_stream = io.TextIOWrapper(
+            body,
+            encoding="utf-8-sig",
+            newline="",
+        )
+
+        try:
+            rows = list(csv.DictReader(text_stream))
+        finally:
+            text_stream.close()
+
         return rows, True
 
     except ClientError as error:
@@ -101,30 +117,56 @@ def save_csv(
     rows: Iterable[dict],
     fieldnames: list[str],
 ) -> None:
+    """
+    V2 memory-safe:
+    Escribe el CSV a un archivo temporal en disco y luego lo transmite
+    a S3, evitando varias copias completas del CSV dentro de la RAM.
+    """
     require_bucket()
 
-    buffer = io.StringIO()
-    writer = csv.DictWriter(
-        buffer,
-        fieldnames=fieldnames,
-        extrasaction="ignore",
-    )
-    writer.writeheader()
+    temp_path = None
 
-    for row in rows:
-        writer.writerow({
-            field: "" if row.get(field) is None else str(row.get(field))
-            for field in fieldnames
-        })
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8-sig",
+            newline="",
+            suffix=".csv",
+            delete=False,
+        ) as temp_file:
+            temp_path = temp_file.name
 
-    s3_client.put_object(
-        Bucket=AWS_S3_BUCKET,
-        Key=key,
-        Body=buffer.getvalue().encode("utf-8-sig"),
-        ContentType="text/csv; charset=utf-8",
-    )
+            writer = csv.DictWriter(
+                temp_file,
+                fieldnames=fieldnames,
+                extrasaction="ignore",
+            )
+            writer.writeheader()
 
-    print(f"☁️ S3 actualizado: s3://{AWS_S3_BUCKET}/{key}")
+            for row in rows:
+                writer.writerow({
+                    field: "" if row.get(field) is None else str(row.get(field))
+                    for field in fieldnames
+                })
+
+        with open(temp_path, "rb") as binary_file:
+            s3_client.upload_fileobj(
+                binary_file,
+                AWS_S3_BUCKET,
+                key,
+                ExtraArgs={
+                    "ContentType": "text/csv; charset=utf-8",
+                },
+            )
+
+        print(f"☁️ S3 actualizado: s3://{AWS_S3_BUCKET}/{key}")
+
+    finally:
+        if temp_path:
+            try:
+                os.remove(temp_path)
+            except FileNotFoundError:
+                pass
 
 
 def load_state() -> tuple[list[dict], list[dict], bool]:
@@ -141,16 +183,19 @@ def save_state(
     articles: list[dict],
     matches: list[dict],
 ) -> None:
-    articles_sorted = sorted(
-        articles,
+    """
+    V2 memory-safe:
+    Ordena las listas existentes in-place para evitar dos copias completas
+    adicionales creadas por sorted(...).
+    """
+    articles.sort(
         key=lambda row: (
             row.get("fecha_publicacion_utc", ""),
             row.get("titulo", "").lower(),
         ),
     )
 
-    matches_sorted = sorted(
-        matches,
+    matches.sort(
         key=lambda row: (
             row.get("fecha_match_utc", ""),
             row.get("cliente_id", ""),
@@ -160,12 +205,13 @@ def save_state(
 
     save_csv(
         ARTICLES_S3_KEY,
-        articles_sorted,
+        articles,
         ARTICLE_FIELDS,
     )
+
     save_csv(
         MATCHES_S3_KEY,
-        matches_sorted,
+        matches,
         MATCH_FIELDS,
     )
 
