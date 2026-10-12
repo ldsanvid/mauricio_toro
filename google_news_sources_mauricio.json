@@ -25,7 +25,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Mauricio+Toro%22&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true
+        "enviar_telegram": true,
+        "incluir_brief": false
       },
       {
         "id": "alianza_verde_general",
@@ -39,7 +40,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Alianza+Verde%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_john_amaya",
@@ -54,7 +56,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22John+Amaya%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_ariel_avila",
@@ -70,7 +73,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Ariel+%C3%81vila%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_eduardo_enriquez_caicedo",
@@ -86,7 +90,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Eduardo+Enr%C3%ADquez+Caicedo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_andrea_padilla",
@@ -101,7 +106,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Andrea+Padilla%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_jota_pe_hernandez",
@@ -118,7 +124,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Jota+Pe+Hern%C3%A1ndez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_duvalier_sanchez",
@@ -134,7 +141,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Duvalier+S%C3%A1nchez%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_alejandra_abasolo",
@@ -149,7 +157,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Alejandra+Abasolo%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_victor_armero",
@@ -165,7 +174,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Victor+Armero%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_diego_garcia_alfonso",
@@ -181,7 +191,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Diego+Garc%C3%ADa+Alfonso%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_yamit_noe_hurtado",
@@ -197,7 +208,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Yamit+No%C3%A9+Hurtado%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_catherine_juvinao",
@@ -213,7 +225,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Catherine+Juvinao%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_santiago_osorio_marin",
@@ -229,7 +242,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Santiago+Osorio+Mar%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "alianza_verde_jaime_raul_salamanca",
@@ -246,7 +260,8 @@
         "contexto_requerido": [],
         "url": "https://news.google.com/rss/search?q=%22Jaime+Ra%C3%BAl+Salamanca%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true
+        "enviar_telegram": false,
+        "incluir_brief": true
       },
       {
         "id": "tema_educacion_icetex",
@@ -268,8 +283,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=ICETEX+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_emprendimiento_mipymes",
@@ -314,8 +330,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=MiPymes+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_tecnologia_ia",
@@ -351,8 +368,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22inteligencia+artificial%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_tecnologia_telecomunicaciones",
@@ -395,8 +413,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=telecomunicaciones+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_economia_digital_fintech",
@@ -433,8 +452,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=fintech+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_seguridad_hurto_bogota",
@@ -500,8 +520,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=hurto+Bogot%C3%A1+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_salud_endometriosis",
@@ -525,8 +546,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=endometriosis+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_bogota_campin",
@@ -571,8 +593,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22El+Camp%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_bogota_ptar_canoas",
@@ -595,8 +618,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22PTAR+Canoas%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_bogota_presupuesto_2027",
@@ -628,8 +652,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=presupuesto+Bogot%C3%A1+2027+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_educacion_superior",
@@ -658,8 +683,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22educaci%C3%B3n+superior%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_educacion_tecnica_sena",
@@ -690,8 +716,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=SENA+educaci%C3%B3n+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_tecnologia_transformacion_digital",
@@ -722,8 +749,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22transformaci%C3%B3n+digital%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_economia_digital_cripto",
@@ -758,8 +786,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=criptoactivos+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_seguridad_extorsion_bogota",
@@ -808,8 +837,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=extorsi%C3%B3n+Bogot%C3%A1+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_seguridad_camaras_bogota",
@@ -839,8 +869,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22c%C3%A1maras+de+seguridad%22+Bogot%C3%A1+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": false,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_diversidad_lgbtiq",
@@ -874,8 +905,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=LGBTIQ+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"    
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_salud_etiquetado_frontal",
@@ -903,8 +935,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22etiquetado+frontal%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_salud_asbesto",
@@ -932,8 +965,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=asbesto+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_bogota_rio_bogota",
@@ -957,8 +991,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22R%C3%ADo+Bogot%C3%A1%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_energia_soberania",
@@ -980,8 +1015,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22soberan%C3%ADa+energ%C3%A9tica%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_bogota_carlos_fernando_galan",
@@ -999,8 +1035,9 @@
         "aceptar_match_rss": false,
         "url": "https://news.google.com/rss/search?q=%22Carlos+Fernando+Gal%C3%A1n%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_bogota_clara_lucia_sandoval",
@@ -1017,8 +1054,9 @@
         "aceptar_match_rss": false,
         "url": "https://news.google.com/rss/search?q=%22Clara+Luc%C3%ADa+Sandoval%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_emprendimiento_startups",
@@ -1052,8 +1090,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=startups+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_emprendimiento_microempresas",
@@ -1088,8 +1127,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=microempresas+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_tecnologia_innovacion",
@@ -1118,8 +1158,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=innovaci%C3%B3n+tecnolog%C3%ADa+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_tecnologia_gobierno_digital",
@@ -1150,8 +1191,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22gobierno+digital%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_tecnologia_notarias",
@@ -1182,8 +1224,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=notar%C3%ADas+tecnolog%C3%ADa+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_economia_digital_plataformas",
@@ -1215,8 +1258,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22plataformas+digitales%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       },
       {
         "id": "tema_economia_digital_colaborativa",
@@ -1247,8 +1291,9 @@
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22econom%C3%ADa+colaborativa%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
-        "enviar_telegram": true,
-        "telegram_desde": "2026-09-04T02:05:00Z"
+        "enviar_telegram": false,
+        "telegram_desde": "2026-09-04T02:05:00Z",
+        "incluir_brief": true
       }
     ],
     "activo": true

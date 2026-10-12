@@ -49,6 +49,16 @@ MAX_YOUTUBE_CANDIDATES = int(os.getenv("MAURICIO_BRIEF_MAX_YOUTUBE_CANDIDATES", 
 MAX_TELEGRAM_CHARS = int(os.getenv("MAURICIO_BRIEF_MAX_CHARS", "3700"))
 MAX_HISTORY_BULLETS = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_BULLETS", "24"))
 MAX_HISTORY_TITLES = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_TITLES", "30"))
+MAX_HISTORY_EVENTS = int(os.getenv("MAURICIO_BRIEF_MAX_HISTORY_EVENTS", "60"))
+EVENT_HISTORY_HOURS = int(os.getenv("MAURICIO_BRIEF_EVENT_HISTORY_HOURS", "72"))
+
+YOUTUBE_TOPIC_OVERRIDES = {
+    "ICETEX": "Educación",
+    "SENA": "Educación",
+    "Carlos Fernando Galán": "Alcalde Galán",
+    "Bogotá / Alcaldía": "Alcaldía de Bogotá",
+    "LGBTIQ+": "Diversidad",
+}
 
 NON_NEWS_DOMAINS = {
     "facebook.com", "www.facebook.com",
@@ -303,7 +313,7 @@ def is_news_selection_candidate(row):
 
 
 def load_youtube_candidates():
-    """Lee del S3 sólo los videos ya procesados por youtube_worker_mauricio_v3."""
+    """Lee del S3 sólo los videos ya procesados por youtube_worker_mauricio_v5."""
     bucket = os.getenv("AWS_S3_BUCKET", "").strip()
     if not bucket:
         return []
@@ -326,21 +336,33 @@ def load_youtube_candidates():
         published = parse_dt(item.get("published_at"))
         if published is None or published.astimezone(CO_TZ).date() != today:
             continue
-        topics = [safe_text(x) for x in item.get("axes", []) if safe_text(x)]
+        topics = []
+        for raw_topic in item.get("axes", []):
+            raw_topic = safe_text(raw_topic)
+            if not raw_topic:
+                continue
+            topic = YOUTUBE_TOPIC_OVERRIDES.get(raw_topic, raw_topic)
+            if topic not in topics:
+                topics.append(topic)
         if not topics:
             continue
         transcript = safe_text(item.get("transcript_text"))
+        transcript_ok = (
+            safe_text(item.get("transcript_status")) == "transcript_ok"
+            and bool(transcript)
+        )
         rows.append({
             "titulo": safe_text(item.get("title")),
             "fuente": safe_text(item.get("channel")) or "YouTube",
-            # El modelo recibe sólo un extracto acotado: controla tokens.
-            "resumen_rss": transcript[:1200] or safe_text(item.get("title")),
+            # Sin transcript, la única evidencia textual enviada al modelo es el título.
+            "resumen_rss": transcript[:1200] if transcript_ok else safe_text(item.get("title")),
             "url": safe_text(item.get("brief_url")) or safe_text(item.get("url")),
             "fecha_publicacion_utc": safe_text(item.get("published_at")),
             "temas": topics[:4],
             "platform": "youtube",
             "content_type": "video",
             "video_id": safe_text(item.get("video_id")),
+            "transcript_available": transcript_ok,
         })
     rows.sort(key=lambda x: x["fecha_publicacion_utc"], reverse=True)
     return rows[:MAX_YOUTUBE_CANDIDATES]
@@ -403,15 +425,134 @@ def trim_message(message, max_chars=MAX_TELEGRAM_CHARS):
     return result
 
 def load_brief_history():
-    """Lee lo ya comunicado hoy para evitar repetir hechos entre cortes."""
+    """
+    Memoria híbrida:
+    - bullets/titles: sólo del día actual (compatibilidad y filtro textual).
+    - events: memoria semántica móvil de EVENT_HISTORY_HOURS, incluso entre días.
+    """
     state, _ = load_json_state(BRIEF_STATE_KEY)
+    now_utc = datetime.now(timezone.utc)
     today = datetime.now(CO_TZ).date().isoformat()
-    if safe_text(state.get("history_date")) != today:
-        return {"bullets": [], "titles": []}
-    return {
-        "bullets": [safe_text(x) for x in state.get("reported_bullets", []) if safe_text(x)],
-        "titles": [safe_text(x) for x in state.get("reported_titles", []) if safe_text(x)],
-    }
+
+    same_day = safe_text(state.get("history_date")) == today
+    bullets = (
+        [safe_text(x) for x in state.get("reported_bullets", []) if safe_text(x)]
+        if same_day else []
+    )
+    titles = (
+        [safe_text(x) for x in state.get("reported_titles", []) if safe_text(x)]
+        if same_day else []
+    )
+
+    events = []
+    for raw in state.get("reported_events", []):
+        if not isinstance(raw, dict):
+            continue
+        text = safe_text(raw.get("event"))
+        ts = safe_text(raw.get("reported_at_utc"))
+        if not text or not ts:
+            continue
+        try:
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            age_hours = (now_utc - dt.astimezone(timezone.utc)).total_seconds() / 3600
+        except Exception:
+            continue
+        if 0 <= age_hours <= EVENT_HISTORY_HOURS:
+            events.append({
+                "event": text,
+                "topic": safe_text(raw.get("topic")),
+                "reported_at_utc": ts,
+            })
+
+    return {"bullets": bullets, "titles": titles, "events": events}
+
+
+def semantic_event_prefilter(candidates, history=None):
+    """V13: elimina acontecimientos ya reportados ANTES de la selección editorial."""
+    history = history or {}
+    events = history.get("events", [])
+    if not candidates or not events:
+        return candidates, []
+
+    payload = []
+    for i, row in enumerate(candidates, start=1):
+        payload.append({
+            "id": i,
+            "titulo": safe_text(row.get("titulo")),
+            "medio": safe_text(row.get("fuente")),
+            "resumen": safe_text(row.get("resumen_rss"))[:700],
+            "temas": row.get("temas", []),
+            "tipo": safe_text(row.get("content_type")) or "noticia",
+        })
+
+    prompt = f"""
+Clasifica cada candidata como REPETIDO o NUEVO frente a los EVENTOS YA REPORTADOS.
+
+EVENTOS YA REPORTADOS:
+{json.dumps(events, ensure_ascii=False)}
+
+CANDIDATAS:
+{json.dumps(payload, ensure_ascii=False)}
+
+REGLAS:
+- Compara ACONTECIMIENTOS, no similitud literal de titulares.
+- Cambio de medio, titular, redacción, verbo equivalente o cifra redondeada NO crea un evento nuevo.
+- Una persona, institución o tema puede reaparecer si existe un desarrollo material realmente nuevo.
+- REPETIDO = el hecho sustantivo ya fue comunicado.
+- NUEVO = aporta una acción, decisión, cifra, consecuencia o desarrollo material no comunicado.
+- Si hay duda material, clasifica NUEVO para evitar perder información.
+- Devuelve SOLO JSON válido:
+{{"resultados":[{{"id":1,"clasificacion":"REPETIDO","razon":"breve"}}]}}
+""".strip()
+
+    client = OpenAI()
+    response = client.responses.create(
+        model=BRIEF_MODEL,
+        input=[
+            {
+                "role": "system",
+                "content": "Eres un clasificador conservador de acontecimientos para un brief ejecutivo. Devuelve exclusivamente JSON válido.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+    )
+    raw = safe_text(getattr(response, "output_text", ""))
+    if raw.startswith("```"):
+        raw = raw.strip("`")
+        if raw.lower().startswith("json"):
+            raw = raw[4:].strip()
+
+    try:
+        data = json.loads(raw)
+    except Exception as error:
+        print(f"⚠️ BRIEF | pre-filtro semántico inválido ({error}); no se excluye ninguna candidata.")
+        return candidates, []
+
+    decisions = {}
+    for item in data.get("resultados", []):
+        if not isinstance(item, dict):
+            continue
+        try:
+            idx = int(item.get("id"))
+        except Exception:
+            continue
+        decisions[idx] = {
+            "clasificacion": safe_text(item.get("clasificacion")).upper(),
+            "razon": safe_text(item.get("razon")),
+        }
+
+    kept, excluded = [], []
+    for i, row in enumerate(candidates, start=1):
+        decision = decisions.get(i, {})
+        if decision.get("clasificacion") == "REPETIDO":
+            excluded.append({
+                "titulo": safe_text(row.get("titulo")),
+                "razon": decision.get("razon", ""),
+            })
+        else:
+            kept.append(row)
+
+    return kept, excluded
 
 
 def build_prompt(candidates, history=None):
@@ -431,13 +572,23 @@ def build_prompt(candidates, history=None):
             "resumen": row["resumen_rss"][:500],
             "temas": row["temas"],
             "tipo": row.get("content_type", "noticia"),
+            "evidencia": (
+                "transcript_disponible"
+                if safe_text(row.get("content_type")).lower() == "video"
+                and row.get("transcript_available")
+                else (
+                    "solo_titulo_metadata"
+                    if safe_text(row.get("content_type")).lower() == "video"
+                    else "rss_metadata"
+                )
+            ),
         }
         for i, row in enumerate(candidates)
     ]
     return f"""
 Produce un brief informativo neutral y estrictamente basado en estas notas.
 Devuelve SOLO JSON válido:
-{{"bullets":[{{"tema":"Educación","texto":"..."}}],"seleccion_ids":[1,2,3]}}
+{{"bullets":[{{"tema":"Educación","texto":"..."}}],"seleccion_ids":[1,2,3],"eventos_nuevos":[{{"tema":"Educación","evento":"hecho atómico y autosuficiente"}}]}}
 
 EJES CON NOTICIAS DISPONIBLES:
 {json.dumps(active_topics, ensure_ascii=False)}
@@ -448,7 +599,16 @@ HECHOS YA COMUNICADOS EN CORTES ANTERIORES DE HOY:
 CONTENIDOS YA SELECCIONADOS EN CORTES ANTERIORES DE HOY:
 {json.dumps(history.get("titles", []), ensure_ascii=False)}
 
+EVENTOS YA REPORTADOS EN LAS ÚLTIMAS {EVENT_HISTORY_HOURS} HORAS:
+{json.dumps(history.get("events", []), ensure_ascii=False)}
+
 Reglas:
+- Este brief es INCREMENTAL: informa novedades respecto de cortes anteriores y de EVENTOS YA REPORTADOS.
+- La unidad de deduplicación es el ACONTECIMIENTO, no el titular, la fuente, la URL ni la redacción.
+- Si una candidata cuenta el mismo acontecimiento ya reportado, NO la incluyas aunque cambien medio, titular, cifras redondeadas o formulación.
+- Una entidad o eje puede volver a aparecer cuando exista un hecho nuevo y sustantivo. Ejemplo: "Colombia Fintech invertirá $4,3 billones" y "Colombia Fintech pide desmontar el 4x1.000" son eventos distintos.
+- Un desarrollo posterior sólo cuenta como nuevo si agrega una acción, decisión, cifra, consecuencia o información material que no estaba en el evento previo.
+- "eventos_nuevos" debe contener únicamente los acontecimientos efectivamente comunicados en este brief, expresados como hechos atómicos, autosuficientes y neutrales; no copies titulares ni nombres de medios.
 - Este brief es INCREMENTAL: informa novedades respecto de los cortes anteriores del mismo día.
 - NO repitas un hecho ya comunicado aunque aparezca en otro medio, con otro titular o en otro formato.
 - Un tema ya informado puede reaparecer sólo si existe un DESARROLLO NUEVO Y SUSTANTIVO.
@@ -473,6 +633,10 @@ Reglas:
 - seleccion_ids puede mezclar noticias web y videos de YouTube.
 - Selecciona únicamente contenidos informativos y sustantivos; evita Facebook, Instagram, X/Twitter y TikTok.
 - Los videos de YouTube compiten por los mismos lugares que las noticias: no hay cuota obligatoria por formato.
+- REGLA ESTRICTA PARA YOUTUBE: si evidencia="solo_titulo_metadata", usa únicamente lo que el título afirma de forma explícita.
+- En un video sin transcript NO infieras quién confirmó, anunció, criticó o realizó algo; tampoco agregues causas, consecuencias, cifras, atribuciones, cargos, lugares más específicos ni contexto que no estén expresamente en el título.
+- Si evidencia="transcript_disponible", puedes usar sólo el título y el extracto de transcript incluido en "resumen"; no agregues información externa.
+- Ante evidencia insuficiente, redacta de forma más general y conservadora o no generes bullet.
 - No selecciones varias notas que cuenten esencialmente el mismo hecho.
 - Sin markdown dentro del JSON.
 
@@ -518,6 +682,36 @@ def generate_brief(candidates, history=None):
         ):
             ids.append(idx)
     result["seleccion_ids"] = ids[:MAX_NOTES]
+
+    new_events = []
+    seen_event_texts = set()
+    for item in result.get("eventos_nuevos", []):
+        if not isinstance(item, dict):
+            continue
+        topic = safe_text(item.get("tema"))
+        event = safe_text(item.get("evento"))
+        key = " ".join(sorted(normalize_title_tokens(event)))
+        if topic in valid_topics and event and key and key not in seen_event_texts:
+            seen_event_texts.add(key)
+            new_events.append({"tema": topic, "evento": event})
+    selected_count = len(result.get("seleccion_ids", []))
+    if len(new_events) < selected_count:
+        for idx in result.get("seleccion_ids", []):
+            if len(new_events) >= selected_count:
+                break
+            row = candidates[idx - 1]
+            event = safe_text(row.get("titulo"))
+            key = " ".join(sorted(normalize_title_tokens(event)))
+            if not event or not key or key in seen_event_texts:
+                continue
+            temas = row.get("temas", [])
+            topic = safe_text(temas[0]) if temas else ""
+            if topic not in valid_topics:
+                continue
+            seen_event_texts.add(key)
+            new_events.append({"tema": topic, "evento": event})
+
+    result["eventos_nuevos"] = new_events[:MAX_NOTES]
     return result
 
 
@@ -568,6 +762,15 @@ def build_current_brief():
         print(f"♻️ BRIEF | duplicados obvios excluidos antes de OpenAI: {len(removed_history)}")
     if not candidates:
         return now_co, candidates, None, None
+
+    candidates, removed_events = semantic_event_prefilter(candidates, history=history)
+    if removed_events:
+        print(f"🧠 BRIEF | acontecimientos ya reportados excluidos: {len(removed_events)}")
+        for item in removed_events:
+            print(f"   ♻️ {item['titulo'][:105]} | {item['razon']}")
+    if not candidates:
+        return now_co, candidates, None, None
+
     result = generate_brief(candidates, history=history)
     resolve_selected_urls(result, candidates)
     message = format_message(result, candidates, now_co)
@@ -658,6 +861,20 @@ def run_if_due(force=False):
                 if 1 <= int(idx) <= len(candidates)
             ]
         )[-MAX_HISTORY_TITLES:],
+        "reported_events": (
+            history.get("events", [])
+            + [
+                {
+                    "event": safe_text(item.get("evento")),
+                    "topic": safe_text(item.get("tema")),
+                    "reported_at_utc": datetime.now(timezone.utc).replace(
+                        microsecond=0
+                    ).isoformat().replace("+00:00", "Z"),
+                }
+                for item in result.get("eventos_nuevos", [])
+                if isinstance(item, dict) and safe_text(item.get("evento"))
+            ]
+        )[-MAX_HISTORY_EVENTS:],
     })
     print(
         f"📨 BRIEF ENVIADO | slot={sent_slot} | candidatas={len(candidates)} | "
@@ -679,9 +896,17 @@ def run_dry_run():
     print("=" * 100)
     print("DRY RUN | BRIEF MAURICIO")
     print(f"Hora Colombia: {now_co.isoformat()}")
-    print(f"Candidatas: {len(candidates)}")
+    news_count = sum(1 for x in candidates if safe_text(x.get("content_type")).lower() != "video")
+    youtube_count = sum(1 for x in candidates if safe_text(x.get("content_type")).lower() == "video")
+    print(f"Candidatas: {len(candidates)} | Noticias={news_count} | YouTube={youtube_count}")
     print("Telegram: DESACTIVADO")
     print("Estado S3 del brief: NO SE MODIFICA")
+    _history_diag = load_brief_history()
+    print(
+        f"Memoria: títulos_hoy={len(_history_diag.get('titles', []))} | "
+        f"bullets_hoy={len(_history_diag.get('bullets', []))} | "
+        f"eventos_{EVENT_HISTORY_HOURS}h={len(_history_diag.get('events', []))}"
+    )
     print("=" * 100)
 
     if not candidates:
@@ -700,13 +925,20 @@ def run_dry_run():
     print(message)
     print("=" * 100)
     print(f"Caracteres del mensaje: {len(message)} / {MAX_TELEGRAM_CHARS}")
+    if result.get("eventos_nuevos"):
+        print("-" * 100)
+        print("EVENTOS NUEVOS QUE V13 RECORDARÍA (DRY RUN: NO GUARDA)")
+        for item in result["eventos_nuevos"]:
+            print(f"  + [{safe_text(item.get('tema'))}] {safe_text(item.get('evento'))}")
 
     if result.get("seleccion_ids"):
         print("-" * 100)
         print("DIAGNÓSTICO DE URLS SELECCIONADAS")
         for idx in result["seleccion_ids"]:
             row = candidates[idx - 1]
-            print(f"[{idx}] {row['titulo']}")
+            kind = "YOUTUBE" if safe_text(row.get("content_type")).lower() == "video" else "NOTICIA"
+            print(f"[{idx}] [{kind}] {row['titulo']}")
+            print(f"    EJES: {', '.join(row.get('temas', [])) or '-'}")
             print(f"    URL USADA: {row['url'] or '(vacía)'}")
             if "news.google.com" in (row["url"] or ""):
                 print("    ⚠️ Sigue siendo URL de Google News (registro histórico o resolución pendiente).")
