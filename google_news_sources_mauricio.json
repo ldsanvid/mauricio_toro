@@ -332,7 +332,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_tecnologia_ia",
@@ -363,14 +364,21 @@
           "aprendizaje automático",
           "algoritmo",
           "algoritmos",
-          "IA generativa"
+          "IA generativa",
+          "brecha digital",
+          "acceso a computador",
+          "acceso a computadores",
+          "computador",
+          "computadores",
+          "conectividad"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22inteligencia+artificial%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_tecnologia_telecomunicaciones",
@@ -415,7 +423,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_economia_digital_fintech",
@@ -454,7 +463,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_seguridad_hurto_bogota",
@@ -548,7 +558,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_bogota_campin",
@@ -588,7 +599,17 @@
           "movilidad",
           "desvíos",
           "concierto",
-          "evento"
+          "evento",
+          "Sencia",
+          "grama",
+          "césped",
+          "cesped",
+          "sobrecosto",
+          "sobrecostos",
+          "retraso",
+          "retrasos",
+          "denuncia",
+          "controversia"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22El+Camp%C3%ADn%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
@@ -678,14 +699,21 @@
           "universidad",
           "universidades",
           "estudiantes universitarios",
-          "matrícula universitaria"
+          "matrícula universitaria",
+          "campus",
+          "multicampus",
+          "beca",
+          "becas",
+          "acceso a la universidad",
+          "acceso a educación superior"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22educaci%C3%B3n+superior%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_educacion_tecnica_sena",
@@ -697,7 +725,12 @@
           "educación técnica",
           "educación tecnológica"
         ],
-        "exclusiones": [],
+        "exclusiones": [
+          "río Sena",
+          "rio Sena",
+          "Sena de París",
+          "Sena de Paris"
+        ],
         "contexto_requerido": [
           "Colombia",
           "Bogotá",
@@ -718,7 +751,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_tecnologia_transformacion_digital",
@@ -744,14 +778,21 @@
           "digitalización",
           "trámites digitales",
           "Estado digital",
-          "servicios públicos digitales"
+          "servicios públicos digitales",
+          "firma electrónica",
+          "firma digital",
+          "asistente virtual",
+          "chatbot",
+          "automatización de trámites",
+          "automatización de servicios"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22transformaci%C3%B3n+digital%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_economia_digital_cripto",
@@ -788,7 +829,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_seguridad_extorsion_bogota",
@@ -907,7 +949,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_salud_etiquetado_frontal",
@@ -937,7 +980,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_salud_asbesto",
@@ -967,7 +1011,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_bogota_rio_bogota",
@@ -1017,7 +1062,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_bogota_carlos_fernando_galan",
@@ -1051,7 +1097,7 @@
         "exclusiones": [],
         "contexto_requerido": [],
         "contexto_tematico": [],
-        "aceptar_match_rss": false,
+        "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22Clara+Luc%C3%ADa+Sandoval%22+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
@@ -1092,7 +1138,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_emprendimiento_microempresas",
@@ -1129,7 +1176,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_tecnologia_innovacion",
@@ -1153,14 +1201,23 @@
           "tecnologías emergentes",
           "desarrollo tecnológico",
           "ecosistema tecnológico",
-          "innovación digital"
+          "innovación digital",
+          "centro de datos",
+          "centros de datos",
+          "data center",
+          "data centers",
+          "infraestructura digital",
+          "infraestructura tecnológica",
+          "tecnología asistiva",
+          "gafas inteligentes"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=innovaci%C3%B3n+tecnolog%C3%ADa+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_tecnologia_gobierno_digital",
@@ -1186,14 +1243,21 @@
           "trámites digitales",
           "trámites en línea",
           "digitalización del Estado",
-          "servicios públicos digitales"
+          "servicios públicos digitales",
+          "firma electrónica",
+          "firma digital",
+          "asistente virtual",
+          "chatbot",
+          "automatización de trámites",
+          "automatización de servicios"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22gobierno+digital%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_tecnologia_notarias",
@@ -1226,7 +1290,8 @@
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_economia_digital_plataformas",
@@ -1253,14 +1318,18 @@
           "trabajadores de plataformas",
           "aplicaciones digitales",
           "apps de transporte",
-          "apps de reparto"
+          "apps de reparto",
+          "trabajadores de aplicaciones",
+          "trabajadores de apps",
+          "trabajo en aplicaciones"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22plataformas+digitales%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       },
       {
         "id": "tema_economia_digital_colaborativa",
@@ -1286,14 +1355,18 @@
           "trabajo en plataformas",
           "trabajadores de plataformas",
           "aplicaciones de transporte",
-          "aplicaciones de reparto"
+          "aplicaciones de reparto",
+          "trabajadores de aplicaciones",
+          "trabajadores de apps",
+          "trabajo en aplicaciones"
         ],
         "aceptar_match_rss": true,
         "url": "https://news.google.com/rss/search?q=%22econom%C3%ADa+colaborativa%22+Colombia+when:1d&hl=es-419&gl=CO&ceid=CO:es-419",
         "activo": true,
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
-        "incluir_brief": true
+        "incluir_brief": true,
+        "usar_contexto_colombia_ampliado": true
       }
     ],
     "activo": true
