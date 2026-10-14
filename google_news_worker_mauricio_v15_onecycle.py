@@ -123,6 +123,107 @@ MONITORING_START_DATE = date.fromisoformat(
 )
 
 
+# V15 CALIBRACIÓN | Contexto colombiano ampliado para radares nacionales.
+# Se activa por fuente con "usar_contexto_colombia_ampliado": true.
+# No reemplaza el filtro temático: una nota debe seguir tratando realmente
+# sobre el eje monitoreado.
+COLOMBIA_CONTEXT_TERMS = [
+    "Colombia",
+    "Gobierno Nacional",
+    "Gobierno Petro",
+    "Petro",
+    "Presidencia",
+    "Congreso",
+    "Bogotá",
+    "Cundinamarca",
+    "Medellín",
+    "Antioquia",
+    "Cali",
+    "Valle del Cauca",
+    "Barranquilla",
+    "Atlántico",
+    "Cartagena",
+    "Bolívar",
+    "Bucaramanga",
+    "Santander",
+    "Manizales",
+    "Caldas",
+    "Pereira",
+    "Risaralda",
+    "Armenia",
+    "Quindío",
+    "Ibagué",
+    "Tolima",
+    "Neiva",
+    "Huila",
+    "Villavicencio",
+    "Meta",
+    "Cúcuta",
+    "Norte de Santander",
+    "Santa Marta",
+    "Magdalena",
+    "Montería",
+    "Córdoba",
+    "Sincelejo",
+    "Sucre",
+    "Valledupar",
+    "Cesar",
+    "Tunja",
+    "Boyacá",
+    "Pasto",
+    "Nariño",
+    "Popayán",
+    "Cauca",
+    "Quibdó",
+    "Chocó",
+    "Riohacha",
+    "La Guajira",
+    "San Andrés",
+    "Archipiélago de San Andrés",
+    "Arauca",
+    "Casanare",
+    "Yopal",
+    "Caquetá",
+    "Florencia",
+    "Putumayo",
+    "Amazonas",
+    "Leticia",
+    "Guaviare",
+    "Guainía",
+    "Vaupés",
+    "Vichada",
+    "MinTIC",
+    "Ministerio TIC",
+    "Ministerio de Tecnologías de la Información",
+    "MinCIT",
+    "MinComercio",
+    "Ministerio de Comercio",
+    "MinEducación",
+    "Ministerio de Educación",
+    "SENA",
+    "ICETEX",
+    "Superfinanciera",
+    "Banco de la República",
+]
+
+
+def expanded_required_context(rss: dict) -> list[str]:
+    base = list(rss.get("contexto_requerido") or [])
+    if rss.get("usar_contexto_colombia_ampliado", False) is True:
+        base.extend(COLOMBIA_CONTEXT_TERMS)
+
+    # Conserva orden y elimina duplicados sin distinguir mayúsculas/minúsculas.
+    result = []
+    seen = set()
+    for item in base:
+        value = "" if item is None else str(item).strip()
+        key = value.casefold()
+        if value and key not in seen:
+            seen.add(key)
+            result.append(value)
+    return result
+
+
 def memory_rss_mb() -> float:
     """Memoria RSS actual del proceso en Linux/Render, en MB."""
     try:
@@ -226,9 +327,7 @@ def load_sources() -> list[dict]:
                 ),
                 "aliases": rss.get("aliases") or [],
                 "exclusiones": rss.get("exclusiones") or [],
-                "contexto_requerido": (
-                    rss.get("contexto_requerido") or []
-                ),
+                "contexto_requerido": expanded_required_context(rss),
                 "contexto_tematico": (
                     rss.get("contexto_tematico") or []
                 ),
@@ -252,6 +351,9 @@ def load_sources() -> list[dict]:
                 ),
                 "incluir_brief": (
                     rss.get("incluir_brief", rss_id != "mauricio_toro") is True
+                ),
+                "mauricio_project_signals": (
+                    rss.get("mauricio_project_signals") or []
                 ),
             })
 
@@ -613,6 +715,21 @@ def detect_trigger_term(
             return alias
 
     return ""
+
+def summary_for_classification(title: str, summary: str, publisher: str) -> str:
+    """
+    Google News RSS often appends the publisher name to the summary.
+    Do not let words in the publisher name (e.g. "El Ecosistema Startup")
+    satisfy thematic aliases.
+    """
+    cleaned = safe_text(summary)
+    pub = safe_text(publisher)
+
+    if pub and cleaned.casefold().endswith(pub.casefold()):
+        cleaned = cleaned[: len(cleaned) - len(pub)].rstrip(" -|–—")
+
+    return cleaned
+
 
 def classify_relevance(
     title: str,
@@ -1275,6 +1392,76 @@ def is_contextual_toro_rescue(article, matches, matches_by_article=None):
             return False
     return True
 
+def match_mauricio_project_signal(
+    title: str,
+    summary: str,
+    source_cfg: dict,
+    published_dt: datetime | None = None,
+) -> tuple[bool, str]:
+
+    signals = source_cfg.get("mauricio_project_signals") or []
+    if not signals:
+        return False, ""
+
+    haystack = normalize_for_match(
+        f"{safe_text(title)} {safe_text(summary)}"
+    )
+
+    pub_date = None
+    if published_dt is not None:
+        try:
+            pub_date = published_dt.astimezone(CO_TZ).date()
+        except Exception:
+            pub_date = None
+
+    for signal in signals:
+        signal_id = safe_text(signal.get("id"))
+        if not signal_id:
+            continue
+
+        desde = safe_text(signal.get("desde"))
+        hasta = safe_text(signal.get("hasta"))
+
+        try:
+            if pub_date is not None and desde:
+                if pub_date < datetime.fromisoformat(desde).date():
+                    continue
+            if pub_date is not None and hasta:
+                if pub_date > datetime.fromisoformat(hasta).date():
+                    continue
+        except Exception:
+            pass
+
+        for phrase in signal.get("frases_exactas") or []:
+            if contains_match_term(haystack, phrase):
+                return True, signal_id
+
+        for pattern in signal.get("patrones") or []:
+            groups = pattern.get("todos_los_grupos") or []
+            if not groups:
+                continue
+
+            all_groups_ok = True
+            for group in groups:
+                if not any(
+                    contains_match_term(haystack, term)
+                    for term in (group or [])
+                ):
+                    all_groups_ok = False
+                    break
+
+            if all_groups_ok:
+                return True, signal_id
+
+    return False, ""
+
+
+def article_mauricio_project_id(article: dict) -> str:
+    reason = safe_text(article.get("motivo_relevancia"))
+    match = re.search(r"(?:^|\|)\s*mauricio_proyecto:([a-zA-Z0-9_-]+)", reason)
+    return safe_text(match.group(1)) if match else ""
+
+
 def choose_telegram_source(
     article: dict,
     matches: list[dict],
@@ -1305,6 +1492,11 @@ def choose_telegram_source(
         )
     )
   
+
+    # V17: si la noticia pertenece a un proyecto configurado de Mauricio,
+    # se trata como alerta de Mauricio aunque su nombre no esté en el titular.
+    if mauricio_source and article_mauricio_project_id(article):
+        return mauricio_source
 
     # V9: rescate contextual del apellido con bloqueo de falsos positivos obvios.
     if mauricio_source and is_contextual_toro_rescue(
@@ -1442,6 +1634,17 @@ def detect_trigger_location(
     return ""
 
 def telegram_guard_key(article: dict) -> str:
+    project_id = article_mauricio_project_id(article)
+    if project_id:
+        published_dt = parse_existing_datetime(
+            article.get("fecha_publicacion_utc")
+        )
+        if published_dt is not None:
+            day_co = published_dt.astimezone(CO_TZ).date().isoformat()
+        else:
+            day_co = utc_now().astimezone(CO_TZ).date().isoformat()
+        return f"project:{project_id}:{day_co}"
+
     story_key = safe_text(article.get("story_key"))
     if story_key:
         return f"story:{story_key}"
@@ -1986,6 +2189,7 @@ def process_source(
     article_by_story_key: dict[str, dict],
     article_by_id: dict[str, dict],
     matches_by_article: dict[str, list[dict]],
+    mauricio_source: dict | None = None,
 ) -> dict:
     print("-" * 100)
     print(
@@ -2063,10 +2267,27 @@ def process_source(
             getattr(entry, "summary", "")
             or getattr(entry, "description", "")
         )
+        summary_classification = summary_for_classification(
+            title,
+            summary,
+            publisher,
+        )
+
+        operational = is_operational_date(
+            published_dt
+        )
+
+        existing_pre = (
+            article_by_id.get(article_id)
+            or article_by_story_key.get(story_key)
+        )
+        article_is_new_pre = (
+            existing_pre is None
+        )
 
         relevant, relevance_reason = classify_relevance(
             title,
-            summary,
+            summary_classification,
             aliases=source_cfg.get(
                 "aliases",
                 [],
@@ -2088,6 +2309,24 @@ def process_source(
                 False,
             ),
         )
+        # V17: proyectos configurados de Mauricio.
+        # Esto evita depender de que Google News exponga "Mauricio Toro"
+        # en el título/resumen o de que podamos resolver/descargar la URL.
+        if not relevant:
+            project_match, project_id = match_mauricio_project_signal(
+                title,
+                summary_classification,
+                source_cfg,
+                published_dt=published_dt,
+            )
+            if project_match:
+                relevant = True
+                relevance_reason = f"mauricio_proyecto:{project_id}"
+                print(
+                    "🟣 MAURICIO RESCATADO POR PROYECTO | "
+                    f"{project_id} | {title}"
+                )
+
         # V11: para el RSS específico de Mauricio, si el título/resumen no
         # confirma la mención, resolvemos la URL y revisamos el cuerpo antes
         # de cerrar la noticia como no relevante.
@@ -2114,7 +2353,7 @@ def process_source(
                 if pre_article_text:
                     relevant, relevance_reason = classify_relevance(
                         title,
-                        summary,
+                        summary_classification,
                         aliases=source_cfg.get("aliases", []),
                         exclusions=source_cfg.get("exclusiones", []),
                         contexto_requerido=source_cfg.get(
@@ -2148,9 +2387,54 @@ def process_source(
                     f"{title}"
                 )
 
-        operational = is_operational_date(
-            published_dt
-        )
+        # V16: rescate universal de menciones a Mauricio.
+        # Una noticia puede llegar por un RSS temático (plataformas, tecnología,
+        # educación, etc.) aunque "Mauricio Toro" sólo aparezca dentro del artículo.
+        # Para evitar costo y ruido, sólo revisamos el cuerpo si la noticia es:
+        # - nueva,
+        # - operativa,
+        # - aún no relevante,
+        # - y llegó por una fuente distinta del RSS directo de Mauricio.
+        if (
+            not relevant
+            and article_is_new_pre
+            and operational
+            and source_cfg.get("rss_id") != "mauricio_toro"
+            and mauricio_source
+        ):
+            if not pre_resolved_url:
+                pre_resolved_url = decode_google_news_url(link)
+
+            if pre_resolved_url:
+                pre_article_text = fetch_article_text(
+                    pre_resolved_url
+                )
+
+                if pre_article_text:
+                    mt_relevant, mt_reason = classify_relevance(
+                        title,
+                        summary_classification,
+                        aliases=mauricio_source.get("aliases", []),
+                        exclusions=mauricio_source.get("exclusiones", []),
+                        contexto_requerido=mauricio_source.get(
+                            "contexto_requerido", []
+                        ),
+                        contexto_tematico=mauricio_source.get(
+                            "contexto_tematico", []
+                        ),
+                        aceptar_match_rss=False,
+                        body_text=pre_article_text,
+                    )
+
+                    if mt_relevant:
+                        relevant = True
+                        relevance_reason = (
+                            f"mauricio_cuerpo:{mt_reason}"
+                        )
+                        print(
+                            "🟣 MAURICIO RESCATADO DESDE RSS TEMÁTICO | "
+                            f"{mt_reason} | {title}"
+                        )
 
         existing_id_article = (
             article_by_id.get(
@@ -2621,6 +2905,14 @@ def run_once() -> None:
         "telegram_skipped_bootstrap": 0,
     }
 
+    mauricio_source = next(
+        (
+            src for src in sources
+            if safe_text(src.get("rss_id")) == "mauricio_toro"
+        ),
+        None,
+    )
+
     for source_index, source_cfg in enumerate(sources, start=1):
         try:
             stats = process_source(
@@ -2644,6 +2936,7 @@ def run_once() -> None:
                     article_by_id
                 ),
                 matches_by_article=matches_by_article,
+                mauricio_source=mauricio_source,
             )
 
             for key in totals:

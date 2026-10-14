@@ -1329,7 +1329,65 @@
         "enviar_telegram": false,
         "telegram_desde": "2026-09-04T02:05:00Z",
         "incluir_brief": true,
-        "usar_contexto_colombia_ampliado": true
+        "usar_contexto_colombia_ampliado": true,
+        "mauricio_project_signals": [
+          {
+            "id": "por_alla_si_voy",
+            "nombre": "Por allá sí voy",
+            "desde": "2026-10-13",
+            "hasta": "2027-12-31",
+            "frases_exactas": [
+              "por allá sí voy",
+              "por alla si voy"
+            ],
+            "patrones": [
+              {
+                "todos_los_grupos": [
+                  [
+                    "proyecto",
+                    "proyecto de ley",
+                    "iniciativa",
+                    "radican",
+                    "radicado",
+                    "congreso"
+                  ],
+                  [
+                    "plataforma",
+                    "plataformas",
+                    "aplicaciones de transporte",
+                    "apps",
+                    "uber",
+                    "cabify",
+                    "didi",
+                    "taxi",
+                    "taxis",
+                    "taxistas"
+                  ]
+                ]
+              },
+              {
+                "todos_los_grupos": [
+                  [
+                    "cupo",
+                    "cupos"
+                  ],
+                  [
+                    "taxi",
+                    "taxis",
+                    "taxistas"
+                  ],
+                  [
+                    "uber",
+                    "cabify",
+                    "didi",
+                    "apps",
+                    "plataformas"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "tema_economia_digital_colaborativa",
