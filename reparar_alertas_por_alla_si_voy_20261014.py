@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
 
-    articles, matches, state = load_state()
+    articles, matches, bootstrap = load_state()
     found = []
 
     for article in articles:
@@ -67,7 +67,7 @@ def main():
     if missing:
         raise RuntimeError("No se aplicó: faltan artículos objetivo en S3.")
 
-    save_state(articles, matches, state)
+    save_state(articles, matches)
     print("✅ S3 actualizado. El siguiente ciclo normal enviará como máximo UNA alerta del proyecto para el día Colombia.")
 
 
