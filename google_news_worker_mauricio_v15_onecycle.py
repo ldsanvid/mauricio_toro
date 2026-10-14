@@ -1634,20 +1634,13 @@ def detect_trigger_location(
     return ""
 
 def telegram_guard_key(article: dict) -> str:
-    project_id = article_mauricio_project_id(article)
-    if project_id:
-        published_dt = parse_existing_datetime(
-            article.get("fecha_publicacion_utc")
-        )
-        if published_dt is not None:
-            day_co = published_dt.astimezone(CO_TZ).date().isoformat()
-        else:
-            day_co = utc_now().astimezone(CO_TZ).date().isoformat()
-        return f"project:{project_id}:{day_co}"
-
+    # V18: deduplicación por noticia, NO por proyecto.
+    # Si cinco medios publican cinco notas distintas sobre el mismo proyecto
+    # de Mauricio, las cinco deben poder enviarse una vez cada una.
     story_key = safe_text(article.get("story_key"))
     if story_key:
         return f"story:{story_key}"
+
     article_id = safe_text(article.get("article_id"))
     return f"article:{article_id}" if article_id else ""
 
