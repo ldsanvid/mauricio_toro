@@ -1,3 +1,4 @@
+"""RSS V16 corregido: consultas recientes, identidad V6 y almacenamiento V16."""
 import argparse
 import calendar
 import hashlib
@@ -12,6 +13,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import feedparser
+from mauricio_rss_capture import query_plan, fetch_feed
 from dotenv import load_dotenv
 
 from news_s3_store_mem_v16 import (
@@ -602,79 +604,126 @@ def fetch_article_text(
         )
 
         return ""
+# V19: desambiguación de la persona antes de generar alertas.
+# Google News puede devolver homónimos, fotos y créditos de prensa.
+MAURICIO_FULL_NAME_RE = re.compile(
+    r"(?<!\w)Mauricio(?:\s+Andr[eé]s)?\s+Toro(?:\s+Orjuela)?(?!\w)",
+    flags=re.I | re.UNICODE,
+)
+
+MAURICIO_POLITICAL_CONTEXT_RE = re.compile(
+    r"\b(?:representante(?:s)?|congresista(?:s)?|excongresista|"
+    r"c[aá]mara(?:\s+de\s+representantes)?|"
+    r"alianza\s+verde|icetex|"
+    r"diputado(?:s)?|proyecto\s+de\s+ley|"
+    r"por\s+all[aá]\s+s[ií]\s+voy|"
+    r"comisi[oó]n\s+(?:del|de)\s+congreso)\b",
+    flags=re.I | re.UNICODE,
+)
+
+MAURICIO_OTHER_PERSON_RE = re.compile(
+    r"\b(?:sernageomin|senapred|"
+    r"servicio\s+nacional\s+de\s+geolog[ií]a|"
+    r"director\s+nacional\s+del\s+organismo)\b",
+    flags=re.I | re.UNICODE,
+)
+
+
+def mauricio_person_evidence(article: dict) -> tuple[bool, str]:
+    """Confirma nombre y desambigua homónimos. Nunca usa una etiqueta de proyecto
+    como prueba suficiente de identidad."""
+    title = safe_text(article.get("titulo"))
+    summary = safe_text(article.get("resumen_rss"))
+    body = safe_text(article.get("texto_articulo"))
+    url = safe_text(article.get("url_original"))
+    domain = (urlparse(url).netloc or "").lower().removeprefix("www.")
+    chunks = [
+        ("titulo", title),
+        ("resumen", summary),
+        ("cuerpo", body),
+    ]
+
+    for field, value in chunks:
+        for hit in MAURICIO_FULL_NAME_RE.finditer(value):
+            near_before = value[max(0, hit.start() - 200):hit.start()]
+            near_after = value[hit.end():hit.end() + 240]
+            around = near_before + " " + hit.group(0) + " " + near_after
+            immediate_before = near_before[-85:]
+            immediate_after = near_after[:85]
+
+            # Coincidencia del nombre dentro de nombres inequívocamente ajenos.
+            if re.search(r"(?:[OÓ]scar)\s+$", near_before[-20:], flags=re.I):
+                continue
+            if re.match(r"\s*[-– ]\s*Goya\b", near_after, flags=re.I):
+                continue
+
+            # Un crédito de autor/foto no equivale a mencionar al político.
+            if (
+                re.search(
+                    r"(?:foto(?:graf[ií]a)?|fot[oó]grafo|"
+                    r"cr[eé]dito(?:s)?|imagen)\s*[:/–-]?\s*$",
+                    immediate_before, flags=re.I
+                )
+                or re.search(r"agencia\s+uno", immediate_after, flags=re.I)
+            ):
+                continue
+
+            # Chile/Sernageomin nombra a un funcionario homónimo.
+            if MAURICIO_OTHER_PERSON_RE.search(around):
+                # Sólo una identificación institucional colombiana cercana
+                # puede invalidar este descarte.
+                if not re.search(
+                    r"(?:alianza\s+verde|icetex|c[aá]mara\s+de\s+representantes)",
+                    around, flags=re.I
+                ):
+                    continue
+
+            if re.search(r"\bAndr[eé]s\b|\bOrjuela\b", hit.group(0), flags=re.I):
+                return True, f"nombre_completo:{field}"
+
+            if MAURICIO_POLITICAL_CONTEXT_RE.search(around):
+                return True, f"contexto_politico:{field}"
+
+            if field == "titulo" and not domain.endswith(".cl"):
+                return True, "nombre_en_titulo"
+
+            # En notas colombianas la mención literal puede ser incidental,
+            # pero también debe notificarse. Bloqueamos sitios chilenos
+            # sin evidencia política concreta.
+            colombian_domain = (
+                domain.endswith(".co")
+                or ".com.co" in domain
+                or "/colombia/" in url.lower()
+            )
+            colombian_title = bool(re.search(
+                r"\b(?:colombia|bogot[aá]|congreso\s+colombiano)\b",
+                title, flags=re.I
+            ))
+            if (colombian_domain or colombian_title) and not domain.endswith(".cl"):
+                return True, f"medio_colombiano:{field}"
+
+    return False, "identidad_no_confirmada"
+
+
 def article_mentions_mauricio(
     article: dict,
     mauricio_source: dict | None,
 ) -> bool:
-
     if not mauricio_source:
         return False
 
-    aliases = (
-        mauricio_source.get(
-            "aliases",
-            [],
-        )
-        or []
-    )
-
-    exclusions = (
-        mauricio_source.get(
-            "exclusiones",
-            [],
-        )
-        or []
-    )
-
-    title = safe_text(
-        article.get("titulo")
-    )
-
-    summary = safe_text(
-        article.get("resumen_rss")
-    )
-
-    original_url = safe_text(
-        article.get("url_original")
-    )
-
-    body_text = safe_text(
-        article.get("texto_articulo")
-    )
-
-    combined = normalize_for_match(
-        " ".join([
-            title,
-            summary,
-            original_url,
-            body_text,
-        ])
-    )
-
-    # Exclusiones primero.
-    for excluded in exclusions:
-        excluded_norm = normalize_for_match(
-            excluded
-        )
-
-        if (
-            excluded_norm
-            and excluded_norm in combined
-        ):
+    # Mantener exclusiones de nombres inequívocamente distintos.
+    combined = " ".join([
+        safe_text(article.get("titulo")),
+        safe_text(article.get("resumen_rss")),
+        safe_text(article.get("texto_articulo")),
+    ])
+    for excluded in mauricio_source.get("exclusiones", []) or []:
+        if contains_match_term(combined, excluded):
             return False
 
-    for alias in aliases:
-        alias_norm = normalize_for_match(
-            alias
-        )
+    return mauricio_person_evidence(article)[0]
 
-        if (
-            alias_norm
-            and alias_norm in combined
-        ):
-            return True
-
-    return False
 
 def detect_trigger_term(
     article: dict,
@@ -958,7 +1007,9 @@ def sanitize_loaded_state(articles: list[dict], matches: list[dict]) -> tuple[li
 
         existing = by_id.get(article_id) if article_id else None
         if existing is None and story_key:
-            existing = by_story.get(story_key)
+            candidate = by_story.get(story_key)
+            if candidate is not None and same_publication_record(candidate, row):
+                existing = candidate
 
         if existing is None:
             canonical_articles.append(row)
@@ -1361,33 +1412,10 @@ TORO_FALSE_POSITIVE_PATTERNS = (
 )
 
 def is_contextual_toro_rescue(article, matches, matches_by_article=None):
-    article_id = safe_text(article.get("article_id"))
-    article_matches = (
-        matches_by_article.get(article_id, [])
-        if matches_by_article is not None
-        else matches
-    )
-    has_mauricio_rss_match = any(
-        safe_text(match.get("article_id")) == article_id
-        and safe_text(match.get("rss_id")) == "mauricio_toro"
-        for match in article_matches
-    )
-    if not has_mauricio_rss_match:
-        return False
+    # V19: el apellido aislado no demuestra identidad. El RSS sirve para
+    # descubrir una nota, pero nunca como evidencia para alertar.
+    return mauricio_person_evidence(article)[0]
 
-    haystack = " ".join([
-        safe_text(article.get("titulo")),
-        safe_text(article.get("resumen_rss")),
-        safe_text(article.get("texto_articulo")),
-    ]).strip()
-
-    if not contains_match_term(haystack, "Toro"):
-        return False
-
-    for pattern in TORO_FALSE_POSITIVE_PATTERNS:
-        if re.search(pattern, haystack, flags=re.I):
-            return False
-    return True
 
 def match_mauricio_project_signal(
     title: str,
@@ -1490,11 +1518,8 @@ def choose_telegram_source(
     )
   
 
-    # V17: si la noticia pertenece a un proyecto configurado de Mauricio,
-    # se trata como alerta de Mauricio aunque su nombre no esté en el titular.
-    if mauricio_source and article_mauricio_project_id(article):
-        return mauricio_source
-
+    # V19: ni el proyecto ni un match RSS bastan para confirmar identidad.
+    # Incluye todas las publicaciones con mención verificable al político.
     # V9: rescate contextual del apellido con bloqueo de falsos positivos obvios.
     if mauricio_source and is_contextual_toro_rescue(
         article, matches, matches_by_article=matches_by_article
@@ -1630,14 +1655,36 @@ def detect_trigger_location(
 
     return ""
 
-def telegram_guard_key(article: dict) -> str:
-    # V18: deduplicación por noticia, NO por proyecto.
-    # Si cinco medios publican cinco notas distintas sobre el mismo proyecto
-    # de Mauricio, las cinco deben poder enviarse una vez cada una.
-    story_key = safe_text(article.get("story_key"))
-    if story_key:
-        return f"story:{story_key}"
+def article_publication_key(article: dict) -> str:
+    """Misma URL del mismo medio = misma publicación, aunque cambie titular."""
+    url = safe_text(article.get("url_original"))
+    if not url or "news.google.com" in url.lower():
+        return ""
+    try:
+        parsed = urlparse(url)
+        domain = parsed.netloc.lower().split("@")[-1].split(":")[0]
+        domain = re.sub(r"^(?:www\.|amp\.|m\.)", "", domain)
+        path = parsed.path.lower().rstrip("/")
+        path = re.sub(r"^/amp/", "/", path)
+        path = re.sub(r"/amp$", "", path)
+        path = re.sub(r"\.amp$", "", path)
+        if not domain or not path or path == "/":
+            return ""
+        return f"{domain}{path}"
+    except Exception:
+        return ""
 
+
+def telegram_guard_key(article: dict) -> str:
+    publication = article_publication_key(article)
+    if publication:
+        return "publication:" + hashlib.sha256(publication.encode("utf-8")).hexdigest()
+    entry_id = safe_text(article.get("google_entry_id"))
+    if entry_id:
+        return "rss_entry:" + hashlib.sha256(entry_id.encode("utf-8")).hexdigest()
+    link = safe_text(article.get("enlace"))
+    if link:
+        return "rss_link:" + hashlib.sha256(link.encode("utf-8")).hexdigest()
     article_id = safe_text(article.get("article_id"))
     return f"article:{article_id}" if article_id else ""
 
@@ -1733,11 +1780,19 @@ def send_pending_telegrams(
     # abortamos las alertas en vez de arriesgar una ráfaga duplicada.
     ledger = load_telegram_alert_ledger()
     ledger_dirty = False
+    # Compatibilidad con claims anteriores basados en story_key: conservar
+    # el bloqueo por article_id aun si ahora la clave usa URL/identificador RSS.
+    legacy_by_article = {}
+    for saved_entry in (ledger.get("entries") or {}).values():
+        saved_id = safe_text((saved_entry or {}).get("article_id"))
+        if saved_id:
+            legacy_by_article[saved_id] = saved_entry
 
     # Última barrera contra duplicados:
-    # si cualquier copia editorial de una historia
-    # ya fue enviada, no volvemos a mandarla.
-    sent_story_keys = set()
+    # la misma URL o entrada RSS ya enviada no se vuelve a mandar.
+    # Dos medios con el mismo titular conservan alertas independientes.
+    sent_alert_keys = set()
+    sent_publication_keys = set()
 
     for row in articles:
         already_sent = (
@@ -1776,10 +1831,12 @@ def send_pending_telegrams(
 
                 row["story_key"] = story_key
 
-        if story_key:
-            sent_story_keys.add(
-                story_key
-            )
+        saved_guard = telegram_guard_key(row)
+        if saved_guard:
+            sent_alert_keys.add(saved_guard)
+        url_key = article_publication_key(row)
+        if url_key:
+            sent_publication_keys.add(url_key)
 
     for article in articles:
         article_id = safe_text(
@@ -1845,7 +1902,8 @@ def send_pending_telegrams(
             continue
 
         guard_key = telegram_guard_key(article)
-        ledger_entry = (ledger.get("entries") or {}).get(guard_key) if guard_key else None
+        ledger_entry = ((ledger.get("entries") or {}).get(guard_key)
+                        or legacy_by_article.get(article_id))
         if ledger_entry:
             print(
                 "🛑 TELEGRAM LEDGER | ya procesada | "
@@ -1854,11 +1912,22 @@ def send_pending_telegrams(
             )
             continue
 
+        # Una URL publicada que ya generó Telegram no debe disparar
+        # una segunda alerta porque el medio cambió el título.
+        publication_key = article_publication_key(article)
+        if publication_key and publication_key in sent_publication_keys:
+            article["telegram_sent"] = "true"
+            print(
+                "🛑 TELEGRAM MISMA PUBLICACIÓN EVITADA | "
+                f"{article.get('titulo', '')}"
+            )
+            continue
+
         # Puede existir otra fila histórica de la
         # misma noticia que ya fue enviada.
         if (
-            story_key
-            and story_key in sent_story_keys
+            guard_key
+            and guard_key in sent_alert_keys
         ):
             article["telegram_sent"] = "true"
 
@@ -1884,6 +1953,21 @@ def send_pending_telegrams(
                 matches_by_article=matches_by_article,
             )
         )
+
+        if not preliminary_source and mauricio_source:
+            # Un proyecto o un match RSS es una pista para leer el cuerpo,
+            # NO autorización para enviar una alerta.
+            candidate_matches = (
+                matches_by_article.get(article_id, [])
+                if matches_by_article is not None else
+                [m for m in matches if safe_text(m.get("article_id")) == article_id]
+            )
+            direct_rss_candidate = any(
+                safe_text(m.get("rss_id")) == "mauricio_toro"
+                for m in candidate_matches
+            )
+            if article_mauricio_project_id(article) or direct_rss_candidate:
+                preliminary_source = mauricio_source
 
         if not preliminary_source:
             continue
@@ -1946,6 +2030,32 @@ def send_pending_telegrams(
         )
 
         if not source_cfg:
+            if article_mauricio_project_id(article):
+                print(
+                    "🚫 MAURICIO IDENTIDAD NO CONFIRMADA | "
+                    f"proyecto={article_mauricio_project_id(article)} | "
+                    f"{article.get('titulo', '')}"
+                )
+            continue
+
+        # El enlace original puede haberse resuelto durante el enriquecimiento.
+        # Volvemos a calcular la clave antes del envío.
+        final_guard_key = telegram_guard_key(article)
+        if final_guard_key != guard_key:
+            guard_key = final_guard_key
+            if (ledger.get("entries") or {}).get(guard_key):
+                print(
+                    "🛑 TELEGRAM LEDGER | misma publicación ya procesada | "
+                    f"{article.get('titulo', '')}"
+                )
+                continue
+        final_publication_key = article_publication_key(article)
+        if final_publication_key and final_publication_key in sent_publication_keys:
+            article["telegram_sent"] = "true"
+            print(
+                "🛑 TELEGRAM MISMA URL YA ENVIADA | "
+                f"{article.get('titulo', '')}"
+            )
             continue
 
         # V7: las alertas inmediatas de Google News quedan reservadas
@@ -2129,8 +2239,10 @@ def send_pending_telegrams(
 
         article["telegram_sent"] = "true"
 
-        if story_key:
-            sent_story_keys.add(story_key)
+        if guard_key:
+            sent_alert_keys.add(guard_key)
+        if publication_key:
+            sent_publication_keys.add(publication_key)
 
         article["telegram_sent_at"] = utc_iso(utc_now())
 
@@ -2168,6 +2280,88 @@ def send_pending_telegrams(
 
     return stats
 
+def same_publication_record(left: dict, right: dict) -> bool:
+    """Un titular compartido nunca prueba que dos filas sean la misma publicación."""
+    left_url, right_url = article_publication_key(left), article_publication_key(right)
+    if left_url and right_url:
+        return left_url == right_url
+    left_entry, right_entry = safe_text(left.get("google_entry_id")), safe_text(right.get("google_entry_id"))
+    if left_entry and right_entry and left_entry == right_entry:
+        return True
+    left_link, right_link = safe_text(left.get("enlace")), safe_text(right.get("enlace"))
+    return bool(left_link and right_link and left_link == right_link)
+
+
+def index_publication(row: dict, lookup: dict) -> None:
+    # Tuplas con referencias a cadenas existentes: no copiar cuerpos ni URLs largas.
+    for label, value in (("entry", safe_text(row.get("google_entry_id"))),
+                         ("link", safe_text(row.get("enlace"))),
+                         ("publication", article_publication_key(row))):
+        if value:
+            lookup.setdefault((label, value), row)
+
+
+def find_existing_publication(article_id, entry_id, link, original_url,
+                              by_id, lookup):
+    existing = by_id.get(article_id)
+    if existing is not None:
+        return existing
+    for label, value in (("entry", entry_id), ("link", link),
+                         ("publication", article_publication_key({"url_original": original_url or link}))):
+        if value:
+            existing = lookup.get((label, value))
+            if existing is not None:
+                return existing
+    return None
+
+
+def capture_source_entries(source_cfg: dict) -> list:
+    """Consulta secuencialmente, une publicaciones y registra las fechas recibidas."""
+    merged = []
+    seen = set()
+    successful = 0
+    for label, url in query_plan(source_cfg["url"], source_cfg["rss_id"]):
+        response = fetch_feed(label, url)
+        if response.error:
+            print(f"⚠️ RSS CONSULTA FALLIDA | {label} | {response.error}")
+            continue
+        feed = feedparser.parse(response.body)
+        entries = getattr(feed, "entries", []) or []
+        if getattr(feed, "bozo", False):
+            print(f"⚠️ RSS XML | {label} | {getattr(feed, 'bozo_exception', '')}")
+            if not entries:
+                continue
+        successful += 1
+        dates = [get_entry_datetime(entry) for entry in entries]
+        valid = [dt for dt in dates if dt is not None]
+        oldest = utc_iso(min(valid)) if valid else "sin fecha"
+        newest = utc_iso(max(valid)) if valid else "sin fecha"
+        print(f"📡 RSS CONSULTA | {label} | entradas={len(entries)} | "
+              f"fecha_min_utc={oldest} | fecha_max_utc={newest}")
+        for entry in entries:
+            entry_key = (safe_text(getattr(entry, "id", ""))
+                         or safe_text(getattr(entry, "link", ""))
+                         or safe_text(getattr(entry, "title", "")))
+            if entry_key in seen:
+                continue
+            seen.add(entry_key)
+            merged.append(entry)
+    if not successful:
+        raise RuntimeError("Todas las consultas de esta fuente RSS fallaron")
+    merged.sort(key=lambda entry: get_entry_datetime(entry)
+                or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    print(f"RSS UNIFICADO | {source_cfg['rss_id']} | publicaciones_unicas={len(merged)}")
+    return merged
+
+
+def recent_enough_for_article_fetch(published_dt: datetime) -> bool:
+    """Ahorra descargas antiguas, sin borrar filas ni alterar el límite de alertas."""
+    if not is_operational_date(published_dt):
+        return False
+    age_hours = max(0.0, (utc_now() - published_dt.astimezone(timezone.utc)).total_seconds() / 3600.0)
+    return age_hours <= TELEGRAM_ALERT_MAX_AGE_HOURS
+
+
 def process_source(
     source_cfg: dict,
     articles: list[dict],
@@ -2176,7 +2370,7 @@ def process_source(
     existing_match_keys: set[tuple[str, str, str]],
     bootstrap: bool,
     new_article_ids: set[str],
-    article_by_story_key: dict[str, dict],
+    article_by_story_key: dict[object, dict],
     article_by_id: dict[str, dict],
     matches_by_article: dict[str, list[dict]],
     mauricio_source: dict | None = None,
@@ -2191,19 +2385,7 @@ def process_source(
         f"URL | {source_cfg['url']}"
     )
 
-    feed = feedparser.parse(
-        source_cfg["url"]
-    )
-
-    if getattr(feed, "bozo", False):
-        print(
-            "⚠️ RSS bozo:",
-            getattr(feed, "bozo_exception", ""),
-        )
-
-    entries = list(
-        getattr(feed, "entries", []) or []
-    )
+    entries = capture_source_entries(source_cfg)
 
     print(
         f"Entradas recibidas: {len(entries)}"
@@ -2267,9 +2449,8 @@ def process_source(
             published_dt
         )
 
-        existing_pre = (
-            article_by_id.get(article_id)
-            or article_by_story_key.get(story_key)
+        existing_pre = find_existing_publication(
+            article_id, google_entry_id, link, "", article_by_id, article_by_story_key
         )
         article_is_new_pre = (
             existing_pre is None
@@ -2317,130 +2498,64 @@ def process_source(
                     f"{project_id} | {title}"
                 )
 
-        # V11: para el RSS específico de Mauricio, si el título/resumen no
-        # confirma la mención, resolvemos la URL y revisamos el cuerpo antes
-        # de cerrar la noticia como no relevante.
-        pre_resolved_url = ""
-        pre_article_text = ""
+        # Reutilizar cuerpos guardados evita volver a descargar notas de años
+        # anteriores. La decisión de identidad sigue las reglas V6.
+        cached = existing_pre or {}
+        pre_resolved_url = safe_text(cached.get("url_original"))
+        pre_article_text = safe_text(cached.get("texto_articulo"))
+        allow_recent_fetch = recent_enough_for_article_fetch(published_dt)
 
-        if (
-            source_cfg.get("rss_id") == "mauricio_toro"
-            and not relevant
-        ):
-            pre_resolved_url = decode_google_news_url(link)
+        if source_cfg.get("rss_id") == "mauricio_toro":
+            evidence_article = {
+                "titulo": title, "resumen_rss": summary_classification,
+                "url_original": pre_resolved_url, "texto_articulo": pre_article_text,
+            }
+            confirmed = article_mentions_mauricio(evidence_article, mauricio_source)
+            # Las exclusiones de identidad no requieren descargar la página.
+            excluded = any(contains_match_term(
+                f"{title} {summary_classification}", excluded_name
+            ) for excluded_name in source_cfg.get("exclusiones", []) or [])
+            if not confirmed and not excluded and not pre_article_text and allow_recent_fetch:
+                if not pre_resolved_url:
+                    pre_resolved_url = decode_google_news_url(link)
+                if pre_resolved_url:
+                    pre_article_text = fetch_article_text(pre_resolved_url)
+                evidence_article.update(url_original=pre_resolved_url,
+                                        texto_articulo=pre_article_text)
+                confirmed = article_mentions_mauricio(evidence_article, mauricio_source)
+            relevant = confirmed
+            evidence = mauricio_person_evidence(evidence_article)[1]
+            relevance_reason = ("mauricio_identidad:" + evidence
+                                if confirmed else "mauricio_identidad_no_confirmada")
+            if confirmed and pre_article_text and article_is_new_pre:
+                print(f"🟣 MAURICIO CONFIRMADO | {evidence} | {title}")
 
-            if pre_resolved_url:
-                print(
-                    "🔗 URL RESUELTA PRECLASIFICACIÓN | "
-                    f"{publisher or 'sin fuente'} | "
-                    f"{pre_resolved_url}"
-                )
-
-                pre_article_text = fetch_article_text(
-                    pre_resolved_url
-                )
-
-                if pre_article_text:
-                    relevant, relevance_reason = classify_relevance(
-                        title,
-                        summary_classification,
-                        aliases=source_cfg.get("aliases", []),
-                        exclusions=source_cfg.get("exclusiones", []),
-                        contexto_requerido=source_cfg.get(
-                            "contexto_requerido", []
-                        ),
-                        contexto_tematico=source_cfg.get(
-                            "contexto_tematico", []
-                        ),
-                        aceptar_match_rss=False,
-                        body_text=pre_article_text,
-                    )
-
-                    if relevant:
-                        print(
-                            "🛟 MAURICIO RESCATADO POR CUERPO | "
-                            f"{relevance_reason} | {title}"
-                        )
-                    else:
-                        print(
-                            "🚫 MAURICIO NO CONFIRMADO EN CUERPO | "
-                            f"{relevance_reason} | {title}"
-                        )
-                else:
-                    print(
-                        "⚠️ CUERPO NO DISPONIBLE PARA VALIDAR MAURICIO | "
-                        f"{title}"
-                    )
-            else:
-                print(
-                    "⚠️ URL NO RESUELTA PARA VALIDAR MAURICIO | "
-                    f"{title}"
-                )
-
-        # V16: rescate universal de menciones a Mauricio.
-        # Una noticia puede llegar por un RSS temático (plataformas, tecnología,
-        # educación, etc.) aunque "Mauricio Toro" sólo aparezca dentro del artículo.
-        # Para evitar costo y ruido, sólo revisamos el cuerpo si la noticia es:
-        # - nueva,
-        # - operativa,
-        # - aún no relevante,
-        # - y llegó por una fuente distinta del RSS directo de Mauricio.
-        if (
-            not relevant
-            and article_is_new_pre
-            and operational
-            and source_cfg.get("rss_id") != "mauricio_toro"
-            and mauricio_source
-        ):
+        # Conservar el rescate desde RSS temáticos de V6, verificando identidad.
+        if (not relevant and article_is_new_pre and operational
+                and source_cfg.get("rss_id") != "mauricio_toro" and mauricio_source
+                and allow_recent_fetch):
             if not pre_resolved_url:
                 pre_resolved_url = decode_google_news_url(link)
+            if pre_resolved_url and not pre_article_text:
+                pre_article_text = fetch_article_text(pre_resolved_url)
+            evidence_article = {"titulo": title, "resumen_rss": summary_classification,
+                                "url_original": pre_resolved_url,
+                                "texto_articulo": pre_article_text}
+            if article_mentions_mauricio(evidence_article, mauricio_source):
+                relevant = True
+                relevance_reason = "mauricio_cuerpo:" + mauricio_person_evidence(evidence_article)[1]
+                print(f"🟣 MAURICIO RESCATADO DESDE RSS TEMÁTICO | {title}")
 
-            if pre_resolved_url:
-                pre_article_text = fetch_article_text(
-                    pre_resolved_url
-                )
-
-                if pre_article_text:
-                    mt_relevant, mt_reason = classify_relevance(
-                        title,
-                        summary_classification,
-                        aliases=mauricio_source.get("aliases", []),
-                        exclusions=mauricio_source.get("exclusiones", []),
-                        contexto_requerido=mauricio_source.get(
-                            "contexto_requerido", []
-                        ),
-                        contexto_tematico=mauricio_source.get(
-                            "contexto_tematico", []
-                        ),
-                        aceptar_match_rss=False,
-                        body_text=pre_article_text,
-                    )
-
-                    if mt_relevant:
-                        relevant = True
-                        relevance_reason = (
-                            f"mauricio_cuerpo:{mt_reason}"
-                        )
-                        print(
-                            "🟣 MAURICIO RESCATADO DESDE RSS TEMÁTICO | "
-                            f"{mt_reason} | {title}"
-                        )
-
-        existing_id_article = (
-            article_by_id.get(
-                article_id
-            )
-        )
-
-        existing_story_article = (
-            article_by_story_key.get(
-                story_key
-            )
-        )
-
-        existing_article = (
-            existing_id_article
-            or existing_story_article
+        # Una URL resuelta puede identificar una publicación ya guardada con
+        # otro GUID/titular. Nunca reutilizar por coincidencia de titular/fecha.
+        if (existing_pre is None and relevant and allow_recent_fetch
+                and not pre_resolved_url
+                and (source_cfg.get("enviar_telegram", True)
+                     or source_cfg.get("incluir_brief", False))):
+            pre_resolved_url = decode_google_news_url(link)
+        existing_article = find_existing_publication(
+            article_id, google_entry_id, link, pre_resolved_url,
+            article_by_id, article_by_story_key,
         )
 
         article_is_new = (
@@ -2558,60 +2673,23 @@ def process_source(
 
         if article is None:
             continue
+        index_publication(article, article_by_story_key)
+        if google_entry_id:
+            article_by_story_key[("entry", google_entry_id)] = article
+        if link:
+            article_by_story_key[("link", link)] = article
 
-        # V11: también repara falsos negativos históricos del RSS Mauricio.
-        # Si todavía no hay cuerpo, intentamos obtenerlo una sola vez por corrida.
-        if (
-            not article_is_new
-            and source_cfg.get("rss_id") == "mauricio_toro"
-            and safe_text(article.get("relevante")).lower() != "true"
-            and not safe_text(article.get("texto_articulo"))
-        ):
-            historical_url = safe_text(article.get("url_original"))
-
-            if not historical_url:
-                stored_google_url = (
-                    safe_text(article.get("enlace"))
-                    or link
-                )
-                historical_url = decode_google_news_url(
-                    stored_google_url
-                )
-                if historical_url:
-                    article["url_original"] = historical_url
-                    print(
-                        "🔧 URL MAURICIO HISTÓRICA REPARADA | "
-                        f"{historical_url}"
-                    )
-
-            if historical_url:
-                historical_body = fetch_article_text(
-                    historical_url
-                )
-                if historical_body:
-                    article["texto_articulo"] = historical_body
-                    hist_relevant, hist_reason = classify_relevance(
-                        safe_text(article.get("titulo")),
-                        safe_text(article.get("resumen_rss")),
-                        aliases=source_cfg.get("aliases", []),
-                        exclusions=source_cfg.get("exclusiones", []),
-                        contexto_requerido=source_cfg.get(
-                            "contexto_requerido", []
-                        ),
-                        contexto_tematico=source_cfg.get(
-                            "contexto_tematico", []
-                        ),
-                        aceptar_match_rss=False,
-                        body_text=historical_body,
-                    )
-                    if hist_relevant:
-                        article["relevante"] = "true"
-                        article["motivo_relevancia"] = hist_reason
-                        print(
-                            "🛟 MAURICIO HISTÓRICO RESCATADO | "
-                            f"{hist_reason} | "
-                            f"{article.get('titulo', '')}"
-                        )
+        # Reparar únicamente la publicación que volvió a aparecer en el RSS;
+        # nunca reclasificar ni reiniciar todo el histórico ni los envíos.
+        if not article_is_new and source_cfg.get("rss_id") == "mauricio_toro":
+            if pre_resolved_url and not safe_text(article.get("url_original")):
+                article["url_original"] = pre_resolved_url
+            if pre_article_text and not safe_text(article.get("texto_articulo")):
+                article["texto_articulo"] = pre_article_text
+            if (safe_text(article.get("relevante")).lower() != "true"
+                    and article_mentions_mauricio(article, mauricio_source)):
+                article["relevante"] = "true"
+                article["motivo_relevancia"] = "mauricio_identidad_cache:" + mauricio_person_evidence(article)[1]
 
         # Reparación de registros históricos que todavía conservan
         # únicamente la URL de Google News. No usa OpenAI y deja de
@@ -2620,6 +2698,7 @@ def process_source(
             not article_is_new
             and relevant
             and not safe_text(article.get("url_original"))
+            and (source_cfg.get("rss_id") != "mauricio_toro" or allow_recent_fetch)
         ):
             stored_google_url = (
                 safe_text(article.get("enlace"))
@@ -2831,6 +2910,7 @@ def run_once() -> None:
             article_by_story_key[
                 story_key
             ] = row
+        index_publication(row, article_by_story_key)
 
     existing_match_keys = {
         (
@@ -3008,17 +3088,15 @@ def run_once() -> None:
     print("=" * 100)
 
 def main() -> None:
-    """Sólo RSS + envío de alertas de Mauricio (no X/YouTube/brief)."""
     parser = argparse.ArgumentParser(
-        description="Etapa RSS del monitor Mauricio (aislada de X, YouTube y brief)."
+        description="Etapa RSS aislada con las reglas originales V6."
     )
-    parser.add_argument("--once", action="store_true", required=True,
-                        help="Ejecuta un ciclo de RSS, Telegram y S3.")
+    parser.add_argument("--once", action="store_true", required=True)
     parser.parse_args()
-    print("📡 ETAPA AISLADA RSS | GOOGLE NEWS + ALERTAS", flush=True)
+    print("ETAPA RSS V16 CORREGIDA | recientes + identidad V6", flush=True)
     run_once()
     gc.collect()
-    log_memory("fin proceso RSS independiente")
+    log_memory("fin proceso RSS V16 corregido")
 
 
 if __name__ == "__main__":
