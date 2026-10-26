@@ -610,7 +610,8 @@ def _fetch_article_text_legacy(
 def fetch_article_text(url: str) -> str:
     if not supported_url(safe_text(url)):
         return _fetch_article_text_legacy(url)
-    result = read_public_article(url, max_chars=ARTICLE_TEXT_MAX_CHARS)
+    result = read_public_article(url, max_chars=ARTICLE_TEXT_MAX_CHARS,
+                               allow_cambio_fallback=os.getenv("MAURICIO_CAMBIO_READER_FALLBACK", "true").lower() == "true")
     ARTICLE_READ_STATUS[url] = result.status
     print(f"📖 LECTURA PÚBLICA | estado={result.status} | version={result.version or '-'} | intentos={len(result.attempts)} | url={url}")
     return result.text

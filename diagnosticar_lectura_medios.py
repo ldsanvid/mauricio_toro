@@ -32,12 +32,14 @@ def load_identity():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="diagnostico_lectura_medios.json")
+    parser.add_argument("--probar-respaldo-cambio", action="store_true",
+                        help="Si falla Cambio, probar Jina Reader enviando únicamente su URL pública; sin clave API.")
     args = parser.parse_args()
     identity = load_identity()
     report = {"generado_utc": datetime.now(timezone.utc).isoformat(),
               "solo_lectura": True, "s3": False, "telegram": False, "medios": []}
     for medium, url in CASES.items():
-        result = read_public_article(url)
+        result = read_public_article(url, allow_cambio_fallback=args.probar_respaldo_cambio)
         confirmed, evidence = identity({"url_original": url, "texto_articulo": result.text})
         row = {"medio": medium, "url_original": url, "estado": result.status,
                "version": result.version, "caracteres_cuerpo": len(result.text),

@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field
 from html import unescape
 from html.parser import HTMLParser
+import json
 import re
 import time
 from urllib.error import HTTPError
@@ -108,7 +109,58 @@ class ReadResult:
     attempts: list = field(default_factory=list)
 
 
-def read_public_article(url, max_chars=30000):
+def read_cambio_external(url, max_chars=30000):
+    """Respaldo anónimo Jina Reader; sólo transmite la URL pública de Cambio."""
+    result = ReadResult(version="jina_cambio")
+    if not supported_url(url) or publication_url(url)[0] != "cambiocolombia.com":
+        result.status = "respaldo_no_permitido"
+        return result
+    attempt = {"version": "jina_cambio", "http_status": None, "estado": ""}
+    result.attempts.append(attempt)
+    try:
+        request = Request("https://r.jina.ai/" + url, headers={
+            "Accept": "application/json",
+            "X-Target-Selector": ".article-blocks",
+            "X-Remove-Selector": "script,style,nav,aside,footer,figcaption",
+            "X-Respond-With": "text",
+        })
+        with urlopen(request, timeout=20) as response:
+            attempt["http_status"] = response.status
+            if "json" not in response.headers.get("Content-Type", "").lower():
+                raise ValueError("respaldo_no_json")
+            raw = response.read(1024 * 1024 + 1)
+            if len(raw) > 1024 * 1024:
+                raise ValueError("respaldo_supera_limite")
+            payload = json.loads(raw.decode("utf-8"))
+        data = payload.get("data") or {}
+        if payload.get("code") != 200 or data.get("httpStatus") != 200:
+            raise ValueError("respaldo_origen_no_ok")
+        metadata = data.get("metadata") or {}
+        for returned_url in (data.get("url", ""), metadata.get("og:url", "")):
+            if (not isinstance(returned_url, str) or not supported_url(returned_url)
+                    or publication_url(returned_url) != publication_url(url)):
+                raise ValueError("respaldo_url_no_coincide")
+        if metadata.get("og:type") != "article":
+            raise ValueError("respaldo_no_es_articulo")
+        text = data.get("text") or data.get("content") or ""
+        if not isinstance(text, str) or not isinstance(data.get("title"), str):
+            raise ValueError("respaldo_formato_invalido")
+        text = re.sub(r"\s+", " ", text).strip()
+        if len(text) < 120:
+            raise ValueError("respaldo_cuerpo_insuficiente")
+        result.text = text[:max_chars] if max_chars > 0 else text
+        result.status = "ok"
+    except HTTPError as error:
+        attempt["http_status"] = error.code
+        result.status = f"respaldo_http_{error.code}"
+        error.close()
+    except Exception as error:
+        result.status = str(error) if isinstance(error, ValueError) else type(error).__name__
+    attempt["estado"] = result.status
+    return result
+
+
+def read_public_article(url, max_chars=30000, allow_cambio_fallback=False):
     result = ReadResult()
     for label, candidate in public_versions(url):
         attempt = {"version": label, "http_status": None, "estado": ""}
@@ -141,6 +193,11 @@ def read_public_article(url, max_chars=30000):
                 str(error) if isinstance(error, ValueError) else type(error).__name__)
     if not result.attempts:
         result.status = "medio_no_soportado"
+    if (allow_cambio_fallback and publication_url(url)[0] == "cambiocolombia.com"
+            and result.status == "http_403"):
+        fallback = read_cambio_external(url, max_chars=max_chars)
+        fallback.attempts = result.attempts + fallback.attempts
+        return fallback
     return result
 
 
