@@ -26,7 +26,7 @@ import io
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import boto3
@@ -171,11 +171,70 @@ def x_headers():
     return {"Authorization": f"Bearer {BEARER_TOKEN}"}
 
 
-def search_recent(query, since_id=""):
+class XSinceIdExpiredError(RuntimeError):
+    """La API identificó explícitamente un since_id fuera de su ventana."""
+
+
+def expired_since_id_error(payload, since_id):
+    if not since_id or not isinstance(payload, dict):
+        return False
+    errors = payload.get("errors")
+    if not isinstance(errors, list):
+        return False
+    for error in errors:
+        if not isinstance(error, dict):
+            continue
+        params = error.get("parameters")
+        if not isinstance(params, dict):
+            continue
+        values = params.get("since_id", [])
+        if not isinstance(values, list):
+            values = [values]
+        message = str(error.get("message", "")).lower()
+        if (str(since_id) in [str(value) for value in values]
+                and "since_id" in message and "must" in message
+                and ("created after" in message or "larger than" in message)):
+            return True
+    return False
+
+
+def parse_cursor_datetime(value):
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError("Falta zona horaria")
+        return parsed.astimezone(timezone.utc)
+    except (ValueError, TypeError) as error:
+        raise RuntimeError("Fecha inválida en cursor de X") from error
+
+
+def resume_x_from_now(state, query, write_s3, reason):
+    # Sólo cambia el punto de consulta. No modifica el CSV ni las marcas de envío.
+    now = utc_now_iso()
+    updated = dict(state)
+    if state.get("since_id"):
+        updated["cursor_previous_since_id"] = str(state["since_id"])
+    updated["since_id"] = ""
+    updated["resume_from_utc"] = now
+    updated["cursor_reset_at"] = now
+    updated["cursor_reset_reason"] = reason
+    updated["last_run_at"] = now
+    updated["query"] = query
+    if write_s3:
+        save_json_s3(STATE_KEY, updated)
+        print(f"🔧 X CURSOR RENOVADO | inicio_utc={now} | motivo={reason}")
+        print("⏭️ X | próximo ciclo consultará desde este punto | Telegram=0 | histórico conservado")
+    else:
+        print("🔎 X CURSOR VENCIDO | prueba sin cambios en S3 | Telegram=0")
+
+
+def search_recent(query, since_id="", start_time=""):
     """
     Devuelve (posts, users_by_id, meta_final).
     Protegido por MAX_PAGES.
     """
+    if since_id and start_time:
+        raise ValueError("X admite since_id o start_time, no ambos juntos")
     all_posts = []
     users_by_id = {}
     next_token = None
@@ -191,13 +250,25 @@ def search_recent(query, since_id=""):
         }
         if since_id:
             params["since_id"] = since_id
+        elif start_time:
+            params["start_time"] = start_time
         if next_token:
             params["next_token"] = next_token
 
         r = requests.get(API_URL, headers=x_headers(), params=params, timeout=30)
-        if r.status_code != 200:
-            raise RuntimeError(f"X API HTTP {r.status_code}: {r.text[:1000]}")
-        payload = r.json()
+        try:
+            if r.status_code != 200:
+                if r.status_code == 400 and since_id:
+                    try:
+                        error_payload = r.json()
+                    except ValueError:
+                        error_payload = None
+                    if expired_since_id_error(error_payload, since_id):
+                        raise XSinceIdExpiredError("X rechazó since_id por antigüedad")
+                raise RuntimeError(f"X API HTTP {r.status_code}: {r.text[:1000]}")
+            payload = r.json()
+        finally:
+            r.close()
 
         page_posts = payload.get("data", [])
         all_posts.extend(page_posts)
@@ -295,10 +366,11 @@ def run_cycle(mode):
     existing_rows = load_posts_s3() if read_s3 else []
     existing_ids = {r.get("post_id") for r in existing_rows if r.get("post_id")}
 
-    since_id = str(state.get("since_id", "")).strip()
+    since_id = str(state.get("since_id") or "").strip()
+    resume_from = str(state.get("resume_from_utc") or "").strip()
 
     print("=" * 100)
-    print(f"X MAURICIO V2 | modo={mode}")
+    print(f"X MAURICIO V2 | CURSOR CORREGIDO | modo={mode}")
     print(f"Fuentes={len(sources)} | max_results={MAX_RESULTS} | max_pages={MAX_PAGES}")
     print(f"since_id={'SÍ' if since_id else 'NO'}")
     print(f"S3 escritura={'SÍ' if write_s3 else 'NO'} | Telegram prod={'SÍ' if send_prod else 'NO'} | Telegram test={'SÍ' if send_test else 'NO'}")
@@ -308,7 +380,43 @@ def run_cycle(mode):
     # Dry-run deliberadamente no usa since_id de S3: sirve para inspeccionar
     # una muestra reciente sin tocar estado.
     search_since = since_id if mode in {"once", "test-telegram"} else ""
-    posts, users_by_id, meta = search_recent(query, since_id=search_since)
+    search_start = ""
+    if mode in {"once", "test-telegram"}:
+        if not since_id and not resume_from:
+            raise RuntimeError(
+                "No existe since_id productivo. Ejecuta primero: "
+                "python x_worker_mauricio_v2.py --bootstrap"
+            )
+        if not since_id and resume_from:
+            age = parse_cursor_datetime(utc_now_iso()) - parse_cursor_datetime(resume_from)
+            if age >= timedelta(days=7) - timedelta(minutes=5):
+                resume_x_from_now(state, query, write_s3, "resume_window_expired")
+                return
+            # Esperar evita pedir un start_time demasiado próximo al presente.
+            if age < timedelta(seconds=60):
+                print("⏳ X | punto de inicio reciente; consulta en el próximo ciclo | Telegram=0")
+                return
+            search_start = resume_from
+            print(f"📅 X | consulta desde_utc={search_start}")
+    try:
+        posts, users_by_id, meta = search_recent(
+            query, since_id=search_since, start_time=search_start)
+    except XSinceIdExpiredError:
+        resume_x_from_now(state, query, write_s3, "since_id_expired")
+        return
+
+    if search_start:
+        # Defensa adicional: la recuperación sólo acepta publicaciones desde
+        # el nuevo punto de inicio. No se reenvía el periodo omitido.
+        boundary = parse_cursor_datetime(search_start)
+        current_posts = []
+        for post in posts:
+            try:
+                if parse_cursor_datetime(post.get("created_at")) >= boundary:
+                    current_posts.append(post)
+            except RuntimeError:
+                print(f"⚠️ X | publicación sin fecha válida omitida | id={post.get('id', '')}")
+        posts = current_posts
 
     rows = [row_from_post(p, users_by_id, sources) for p in posts]
     new_rows = [r for r in rows if r["post_id"] not in existing_ids]
@@ -333,6 +441,7 @@ def run_cycle(mode):
             existing_ids.add(row["post_id"])
         if newest_id:
             state["since_id"] = newest_id
+            state.pop("resume_from_utc", None)
         state["bootstrapped_at"] = state.get("bootstrapped_at") or utc_now_iso()
         state["last_run_at"] = utc_now_iso()
         state["query"] = query
@@ -341,12 +450,6 @@ def run_cycle(mode):
         print("=" * 100)
         print(f"BOOTSTRAP COMPLETO | históricos_guardados={len(new_rows)} | Telegram=0")
         return
-
-    if not since_id:
-        raise RuntimeError(
-            "No existe since_id productivo. Ejecuta primero: "
-            "python x_worker_mauricio_v2.py --bootstrap"
-        )
 
     target_chat = CHAT_ID_TEST if send_test else CHAT_ID_PROD
     if (send_test or send_prod) and (not BOT_TOKEN or not target_chat):
@@ -373,6 +476,7 @@ def run_cycle(mode):
         # Avanzamos el cursor sólo después de procesar correctamente la corrida.
         if newest_id:
             state["since_id"] = newest_id
+            state.pop("resume_from_utc", None)
         state["last_run_at"] = utc_now_iso()
         state["query"] = query
         save_posts_s3(existing_rows)
