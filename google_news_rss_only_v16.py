@@ -14,6 +14,9 @@ from urllib.parse import urlparse
 
 import feedparser
 from mauricio_rss_capture import query_plan, fetch_feed
+from mauricio_article_reader import (read_public_article, supported_url, retry_due, pending_reason)
+
+ARTICLE_READ_STATUS = {}
 from dotenv import load_dotenv
 
 from news_s3_store_mem_v16 import (
@@ -548,7 +551,7 @@ def decode_google_news_url(
     return ""
 
 
-def fetch_article_text(
+def _fetch_article_text_legacy(
     url: str,
 ) -> str:
 
@@ -604,6 +607,16 @@ def fetch_article_text(
         )
 
         return ""
+def fetch_article_text(url: str) -> str:
+    if not supported_url(safe_text(url)):
+        return _fetch_article_text_legacy(url)
+    result = read_public_article(url, max_chars=ARTICLE_TEXT_MAX_CHARS,
+                               allow_cambio_fallback=os.getenv("MAURICIO_CAMBIO_READER_FALLBACK", "true").lower() == "true")
+    ARTICLE_READ_STATUS[url] = result.status
+    print(f"📖 LECTURA PÚBLICA | estado={result.status} | version={result.version or '-'} | intentos={len(result.attempts)} | url={url}")
+    return result.text
+
+
 # V19: desambiguación de la persona antes de generar alertas.
 # Google News puede devolver homónimos, fotos y créditos de prensa.
 MAURICIO_FULL_NAME_RE = re.compile(
@@ -2504,6 +2517,8 @@ def process_source(
         pre_resolved_url = safe_text(cached.get("url_original"))
         pre_article_text = safe_text(cached.get("texto_articulo"))
         allow_recent_fetch = recent_enough_for_article_fetch(published_dt)
+        read_pending = False
+        read_pending_reason = ""
 
         if source_cfg.get("rss_id") == "mauricio_toro":
             evidence_article = {
@@ -2515,7 +2530,8 @@ def process_source(
             excluded = any(contains_match_term(
                 f"{title} {summary_classification}", excluded_name
             ) for excluded_name in source_cfg.get("exclusiones", []) or [])
-            if not confirmed and not excluded and not pre_article_text and allow_recent_fetch:
+            read_attempt_allowed = retry_due(safe_text(cached.get("motivo_relevancia")), utc_now().timestamp())
+            if not confirmed and not excluded and not pre_article_text and allow_recent_fetch and read_attempt_allowed:
                 if not pre_resolved_url:
                     pre_resolved_url = decode_google_news_url(link)
                 if pre_resolved_url:
@@ -2527,6 +2543,12 @@ def process_source(
             evidence = mauricio_person_evidence(evidence_article)[1]
             relevance_reason = ("mauricio_identidad:" + evidence
                                 if confirmed else "mauricio_identidad_no_confirmada")
+            if (not confirmed and not excluded and not pre_article_text
+                    and allow_recent_fetch and supported_url(pre_resolved_url)):
+                read_pending = True
+                read_pending_reason = (pending_reason(ARTICLE_READ_STATUS.get(pre_resolved_url, "sin_cuerpo"), utc_now().timestamp())
+                                       if read_attempt_allowed else safe_text(cached.get("motivo_relevancia")))
+                relevance_reason = read_pending_reason
             if confirmed and pre_article_text and article_is_new_pre:
                 print(f"🟣 MAURICIO CONFIRMADO | {evidence} | {title}")
 
@@ -2643,7 +2665,7 @@ def process_source(
 
             stats["new_articles"] += 1
 
-            status = "RELEVANTE" if relevant else "NO RELEVANTE"
+            status = "RELEVANTE" if relevant else ("PENDIENTE DE LECTURA" if read_pending else "NO RELEVANTE")
             scope = "OPERATIVA" if operational else "HISTÓRICA"
             print(
                 f"✅ NUEVA NOTICIA | {status} | {scope} | "
@@ -2686,6 +2708,11 @@ def process_source(
                 article["url_original"] = pre_resolved_url
             if pre_article_text and not safe_text(article.get("texto_articulo")):
                 article["texto_articulo"] = pre_article_text
+            if safe_text(article.get("relevante")).lower() != "true":
+                if read_pending:
+                    article["motivo_relevancia"] = read_pending_reason
+                elif pre_article_text:
+                    article["motivo_relevancia"] = relevance_reason
             if (safe_text(article.get("relevante")).lower() != "true"
                     and article_mentions_mauricio(article, mauricio_source)):
                 article["relevante"] = "true"
@@ -2805,7 +2832,9 @@ def process_source(
 
             stats["new_matches"] += 1
 
-        if article_is_new and not relevant:
+        if read_pending:
+            print(f"⏳ MAURICIO PENDIENTE DE LECTURA | reintento=30min | {relevance_reason} | {title}")
+        elif article_is_new and not relevant:
             print(
                 f"🚫 FILTRO: no se notificará | {relevance_reason}"
             )
@@ -3093,7 +3122,7 @@ def main() -> None:
     )
     parser.add_argument("--once", action="store_true", required=True)
     parser.parse_args()
-    print("ETAPA RSS V16 CORREGIDA | recientes + identidad V6", flush=True)
+    print("ETAPA RSS V16 LECTURA | recientes + identidad V6 + lectura pública", flush=True)
     run_once()
     gc.collect()
     log_memory("fin proceso RSS V16 corregido")
